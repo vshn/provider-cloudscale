@@ -2,18 +2,19 @@
 
 PROJECT_ROOT_DIR = .
 # TODO: Adjust project meta
-PROJECT_NAME ?= go-bootstrap
+PROJECT_NAME ?= appcat-service-s3
 PROJECT_OWNER ?= vshn
 
 ## BUILD:go
-BIN_FILENAME ?= $(PROJECT_NAME)
+BIN_FILENAME ?= service-s3
 
 ## BUILD:docker
 DOCKER_CMD ?= docker
 
 IMG_TAG ?= latest
+CONTAINER_REGISTRY ?= ghcr.io
 # Image URL to use all building/pushing image targets
-CONTAINER_IMG ?= local.dev/$(PROJECT_OWNER)/$(PROJECT_NAME):$(IMG_TAG)
+CONTAINER_IMG ?= $(CONTAINER_REGISTRY)/$(PROJECT_OWNER)/$(PROJECT_NAME):$(IMG_TAG)
 
 
 ## KIND:setup
@@ -21,6 +22,5 @@ CONTAINER_IMG ?= local.dev/$(PROJECT_OWNER)/$(PROJECT_NAME):$(IMG_TAG)
 # https://hub.docker.com/r/kindest/node/tags
 KIND_NODE_VERSION ?= v1.24.0
 KIND_IMAGE ?= docker.io/kindest/node:$(KIND_NODE_VERSION)
-KIND ?= go run sigs.k8s.io/kind
 KIND_KUBECONFIG ?= $(kind_dir)/kind-kubeconfig-$(KIND_NODE_VERSION)
 KIND_CLUSTER ?= $(PROJECT_NAME)-$(KIND_NODE_VERSION)

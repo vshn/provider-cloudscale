@@ -1,7 +1,11 @@
 # TODO: Adjust project meta
-name: go-bootstrap
-title: Go Bootstrap
+name: appcat-service-s3
+title: AppCat Service S3
 version: master
 start_page: ROOT:index.adoc
 nav:
   - modules/ROOT/nav.adoc
+asciidoc:
+  attributes:
+    appcat: AppCat
+    releaseVersion: latest
