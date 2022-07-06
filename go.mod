@@ -1,5 +1,4 @@
-// TODO: Replace module name
-module github.com/vshn/go-bootstrap
+module github.com/vshn/appcat-service-s3
 
 go 1.18
 
