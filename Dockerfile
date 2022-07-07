@@ -8,6 +8,7 @@ RUN \
     tzdata
 
 ENTRYPOINT ["service-s3"]
+CMD ["operator"]
 COPY service-s3 /usr/bin/
 
 USER 65536:0

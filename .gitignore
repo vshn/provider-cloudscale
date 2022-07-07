@@ -3,7 +3,7 @@ dist/
 .github/release-notes.md
 
 # Build
-service-s3
+/service-s3
 *.out
 
 # Docs
@@ -13,3 +13,7 @@ node_modules/
 
 # kind
 .kind/
+
+# Charts
+.cr-release-packages/
+.cr-index/

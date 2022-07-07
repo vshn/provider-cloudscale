@@ -1,0 +1,9 @@
+apiVersion: cloudscale.s3.appcat.vshn.io/v1
+kind: ObjectsUser
+metadata:
+  creationTimestamp: null
+  generation: 1
+  name: my-cloudscale-user
+  namespace: default
+spec: {}
+status: {}
