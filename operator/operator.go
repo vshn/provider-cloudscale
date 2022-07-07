@@ -5,7 +5,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-// SetupControllers creates all Postgresql controllers with the supplied logger and adds them to the supplied manager.
+// SetupControllers creates all controllers with the supplied logger and adds them to the supplied manager.
 func SetupControllers(mgr ctrl.Manager) error {
 	for _, setup := range []func(ctrl.Manager) error{
 		cloudscale.SetupController,

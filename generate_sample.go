@@ -30,11 +30,11 @@ func main() {
 }
 
 func generateCloudscaleObjectsUserSample() {
-	spec := newPostgresqlStandaloneSample()
+	spec := newObjectsUserSample()
 	serialize(spec, true)
 }
 
-func newPostgresqlStandaloneSample() *cloudscalev1.ObjectsUser {
+func newObjectsUserSample() *cloudscalev1.ObjectsUser {
 	return &cloudscalev1.ObjectsUser{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: cloudscalev1.ObjectsUserGroupVersionKind.GroupVersion().String(),

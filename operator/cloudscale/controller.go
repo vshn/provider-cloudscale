@@ -20,13 +20,13 @@ var userFinalizer = "s3.appcat.vshn.io/user-protection"
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;list;create;update
 
-// PostgresStandaloneReconciler reconciles cloudscalev1.ObjectsUser.
-type PostgresStandaloneReconciler struct {
+// ObjectsUserReconciler reconciles cloudscalev1.ObjectsUser.
+type ObjectsUserReconciler struct {
 	client client.Client
 }
 
 // Reconcile implements reconcile.Reconciler.
-func (r *PostgresStandaloneReconciler) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+func (r *ObjectsUserReconciler) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	ctx = pipeline.MutableContext(ctx)
 	obj := &cloudscalev1.ObjectsUser{}
 	log := ctrl.LoggerFrom(ctx)
@@ -47,14 +47,14 @@ func (r *PostgresStandaloneReconciler) Reconcile(ctx context.Context, request re
 }
 
 // Provision reconciles the given object.
-func (r *PostgresStandaloneReconciler) Provision(ctx context.Context, instance *cloudscalev1.ObjectsUser) (reconcile.Result, error) {
+func (r *ObjectsUserReconciler) Provision(ctx context.Context) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
 	log.Info("Provisioning instance")
 	return reconcile.Result{}, nil
 }
 
 // Delete prepares the given object for deletion.
-func (r *PostgresStandaloneReconciler) Delete(ctx context.Context) (reconcile.Result, error) {
+func (r *ObjectsUserReconciler) Delete(ctx context.Context) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
 	log.Info("Deleting instance")
 	return reconcile.Result{RequeueAfter: 1 * time.Second}, nil
