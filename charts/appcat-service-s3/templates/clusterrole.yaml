@@ -1,0 +1,46 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: '{{ include "appcat-service-s3.fullname" . }}-view'
+  labels:
+    {{- include "appcat-service-s3.labels" . | nindent 4 }}
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+rules:
+  - apiGroups:
+      - cloudscale.s3.appcat.vshn.io
+    resources:
+      - objectsuers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - cloudscale.s3.appcat.vshn.io
+    resources:
+      - objectsusers/finalizers
+      - objectsusers/status
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: '{{ include "appcat-service-s3.fullname" . }}-edit'
+  labels:
+    {{- include "appcat-service-s3.labels" . | nindent 4 }}
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+rules:
+  - apiGroups:
+      - cloudscale.s3.appcat.vshn.io
+    resources:
+      - objectsusers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch

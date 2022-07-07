@@ -1,6 +1,7 @@
 # Goreleaser
 dist/
 .github/release-notes.md
+.github/crds.yaml
 
 # Build
 /service-s3
