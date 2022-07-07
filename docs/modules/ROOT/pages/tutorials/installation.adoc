@@ -1,0 +1,34 @@
+= Installation
+
+This tutorial goes through the steps required to get the operator up and running.
+
+== Prerequisites
+
+* `kubectl`
+* `helm` v3
+* `yq`
+* A running Kubernetes cluster with cluster-admin permissions
+
+== Steps
+
+. Install chart `appcat-service-s3`
++
+[source,bash,subs="attributes+"]
+----
+helm repo add appcat-service-s3 https://vshn.github.io/appcat-service-s3
+ifeval::["{releaseVersion}" == "latest"]
+kubectl apply -f https://github.com/vshn/appcat-service-s3/releases/latest/download/crds.yaml
+endif::[]
+ifeval::["{releaseVersion}" != "latest"]
+kubectl apply -f https://github.com/vshn/appcat-service-s3/releases/download/{releaseVersion}/crds.yaml
+endif::[]
+helm upgrade --install provider-s3 appcat-service-s3/appcat-service-s3 \
+  --create-namespace \
+  --namespace appcat-service-s3-system \
+  --wait
+----
+
+== Conclusion
+
+Now that you have the basic Operator running, it's time to get started with deploying resources.
+See xref:tutorials/getting-started.adoc[Tutorial: Getting Started] to get started.
