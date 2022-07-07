@@ -18,6 +18,8 @@ include Makefile.vars.mk
 -include kind/kind.mk
 # Chart-related
 -include charts/charts.mk
+# Local Env & testing
+-include test/local.mk
 
 .PHONY: help
 help: ## Show this help

@@ -5,6 +5,6 @@
 package tools
 
 import (
-	// controller-gen
-	_ "sigs.k8s.io/controller-tools/cmd/controller-gen"
+	// To have kind updated via Renovate.
+	_ "sigs.k8s.io/controller-runtime/tools/setup-envtest"
 )

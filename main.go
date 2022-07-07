@@ -54,16 +54,14 @@ func newApp() (context.Context, context.CancelFunc, *cli.App) {
 
 		Before: setupLogging,
 		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:    "debug",
-				Aliases: []string{"verbose", "d"},
-				Usage:   "sets the log level to debug",
-				EnvVars: envVars("DEBUG"),
+			&cli.IntFlag{
+				Name: "log-level", Aliases: []string{"v"}, EnvVars: envVars("LOG_LEVEL"),
+				Usage: "number of the log level verbosity",
+				Value: 0,
 			},
 			&cli.StringFlag{
-				Name:        "log-format",
+				Name: "log-format", EnvVars: envVars("LOG_FORMAT"),
 				Usage:       "sets the log format (values: [json, console])",
-				EnvVars:     envVars("LOG_FORMAT"),
 				DefaultText: "console",
 			},
 		},
