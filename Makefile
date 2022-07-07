@@ -76,11 +76,6 @@ install-samples: export KUBECONFIG = $(KIND_KUBECONFIG)
 install-samples: generate-go install-crd ## Install samples into cluster
 	yq package/samples/*.yaml | kubectl apply -f -
 
-.PHONY: delete-instance
-delete-instance: export KUBECONFIG = $(KIND_KUBECONFIG)
-delete-instance:  ## Deletes sample instance if it exists
-	kubectl delete -f package/samples/postgresql.appcat.vshn.io_postgresqlstandalone.yaml --ignore-not-found=true
-
 .PHONY: run-operator
 run-operator: ## Run in Operator mode against your current kube context
 	go run . -v 1 operator
