@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
+<loc>https://vshn.github.io/appcat-service-s3/appcat-service-s3/how-tos/create-releases.html</loc>
+<lastmod>2022-07-07T11:10:11.075Z</lastmod>
+</url>
+<url>
 <loc>https://vshn.github.io/appcat-service-s3/appcat-service-s3/index.html</loc>
-<lastmod>2022-07-06T15:06:08.346Z</lastmod>
+<lastmod>2022-07-07T11:10:11.075Z</lastmod>
+</url>
+<url>
+<loc>https://vshn.github.io/appcat-service-s3/appcat-service-s3/tutorials/getting-started.html</loc>
+<lastmod>2022-07-07T11:10:11.075Z</lastmod>
+</url>
+<url>
+<loc>https://vshn.github.io/appcat-service-s3/appcat-service-s3/tutorials/installation.html</loc>
+<lastmod>2022-07-07T11:10:11.075Z</lastmod>
 </url>
 </urlset>
