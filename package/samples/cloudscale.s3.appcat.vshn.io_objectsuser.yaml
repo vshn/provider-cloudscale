@@ -5,5 +5,6 @@ metadata:
   generation: 1
   name: my-cloudscale-user
   namespace: default
-spec: {}
+spec:
+  secretRef: my-cloudscale-user-credentials
 status: {}

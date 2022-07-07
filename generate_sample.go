@@ -41,8 +41,10 @@ func newObjectsUserSample() *cloudscalev1.ObjectsUser {
 			Kind:       cloudscalev1.ObjectsUserKind,
 		},
 		ObjectMeta: metav1.ObjectMeta{Name: "my-cloudscale-user", Namespace: "default", Generation: 1},
-		Spec:       cloudscalev1.ObjectsUserSpec{},
-		Status:     cloudscalev1.ObjectsUserStatus{},
+		Spec: cloudscalev1.ObjectsUserSpec{
+			SecretRef: "my-cloudscale-user-credentials",
+		},
+		Status: cloudscalev1.ObjectsUserStatus{},
 	}
 }
 
