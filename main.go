@@ -25,6 +25,11 @@ var (
 	envPrefix = ""
 )
 
+func init() {
+	// Remove `-v` short option from --version flag
+	cli.VersionFlag.(*cli.BoolFlag).Aliases = nil
+}
+
 func main() {
 	ctx, stop, app := newApp()
 	defer stop()
@@ -63,7 +68,7 @@ func newApp() (context.Context, context.CancelFunc, *cli.App) {
 			},
 		},
 		Commands: []*cli.Command{
-			newExampleCommand(),
+			newOperatorCommand(),
 		},
 		ExitErrHandler: func(ctx *cli.Context, err error) {
 			if err != nil {
