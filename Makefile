@@ -16,6 +16,8 @@ include Makefile.vars.mk
 -include docs/antora-preview.mk docs/antora-build.mk
 # Optional kind module
 -include kind/kind.mk
+# Chart-related
+-include charts/charts.mk
 
 .PHONY: help
 help: ## Show this help
@@ -27,7 +29,7 @@ build: build-bin build-docker ## All-in-one build
 .PHONY: build-bin
 build-bin: export CGO_ENABLED = 0
 build-bin: fmt vet ## Build binary
-	@go build -o $(BIN_FILENAME) ./...
+	@go build -o $(BIN_FILENAME) .
 
 .PHONY: build-docker
 build-docker: build-bin ## Build docker image
@@ -54,10 +56,35 @@ lint: fmt vet generate ## All-in-one linting
 	git diff --exit-code
 
 .PHONY: generate
-generate: ## Generate additional code and artifacts
+generate: generate-go generate-docs ## All-in-one code generation
+
+.PHONY: generate-go
+generate-go: ## Generate Go artifacts
 	@go generate ./...
 
+.PHONY: generate-docs
+generate-docs: generate-go ## Generate example code snippets for documentation
+	@yq e 'del(.metadata.creationTimestamp) | del(.metadata.generation) | del(.status)' package/samples/cloudscale.s3.appcat.vshn.io_objectsuser.yaml > $(docs_moduleroot_dir)/examples/cloudscale_objectsuser.yaml
+
+.PHONY: install-crd
+install-crd: export KUBECONFIG = $(KIND_KUBECONFIG)
+install-crd: generate kind-setup ## Install CRDs into cluster
+	kubectl apply -f package/crds
+
+.PHONY: install-samples
+install-samples: export KUBECONFIG = $(KIND_KUBECONFIG)
+install-samples: generate-go install-crd ## Install samples into cluster
+	yq package/samples/*.yaml | kubectl apply -f -
+
+.PHONY: run-operator
+run-operator: ## Run in Operator mode against your current kube context
+	go run . -v 1 operator
+
 .PHONY: clean
-clean: ## Cleans local build artifacts
+clean: kind-clean ## Cleans local build artifacts
 	rm -rf docs/node_modules $(docs_out_dir) dist .cache
-	docker rmi $(CONTAINER_IMG) || true
+	$(DOCKER_CMD) rmi $(CONTAINER_IMG) || true
+
+.PHONY: release-prepare
+release-prepare: generate-go ## Prepares artifacts for releases
+	@cat package/crds/*.yaml | yq > .github/crds.yaml

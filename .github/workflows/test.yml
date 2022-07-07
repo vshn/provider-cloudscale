@@ -4,9 +4,15 @@ on:
   pull_request:
     branches:
       - master
+    paths-ignore:
+      - charts/**
+      - docs/**
   push:
     branches:
       - master
+    paths-ignore:
+      - charts/**
+      - docs/**
 
 jobs:
   test:

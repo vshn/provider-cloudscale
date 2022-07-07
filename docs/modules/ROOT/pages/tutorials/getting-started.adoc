@@ -1,0 +1,48 @@
+= Getting Started
+
+This page describes how to create a new S3 bucket after you have installed the operator.
+
+== Prerequisites
+
+* `kubectl`
+* Already running Kubernetes cluster
+* Installed Operator
+
+== Steps
+
+. Create a file with the spec
++
+.objectsuser.yaml
+[source,yaml]
+----
+include::example$cloudscale_objectsuser.yaml[]
+----
+
+. Apply the spec in the cluster
++
+[source,bash]
+----
+kubectl apply -f objectsuser.yaml
+----
+
+. Wait until the operator has provisioned the user
++
+[source,bash]
+----
+kubectl wait --for condition=Ready objectsuser/my-cloudscale-user
+----
++
+TIP: When the instance is ready, there should be a credential `Secret` created in the same namespace as `my-cloudscale-user`.
++
+[NOTE]
+====
+If you already have a `Secret` named `my-cloudscale-user-credentials`, it will get overwritten.
+Set `spec.secretRef` to another name.
+====
+
+. Inspect the credential `Secret`
++
+[source,bash]
+----
+kubectl get secret my-cloudscale-user-credentials -o yaml
+----
