@@ -10,12 +10,6 @@ $(setup_envtest_bin):
 	$@ $(ENVTEST_ADDITIONAL_FLAGS) use '$(ENVTEST_K8S_VERSION)!'
 	chmod -R +w $(kind_dir)/k8s
 
-ifeq ($(shell uname -s),Darwin)
-	b64 := base64
-else
-	b64 := base64 -w0
-endif
-
 .PHONY: local-install
 local-install: export KUBECONFIG = $(KIND_KUBECONFIG)
 local-install: kind-load-image install-crd ## Install Operator in local cluster

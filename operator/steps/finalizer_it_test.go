@@ -35,7 +35,7 @@ func (ts *FinalizerSuite) Test_AddFinalizer() {
 	}{
 		"GivenResourceWithoutFinalizer_WhenAddingFinalizer_ThenExpectResourceUpdatedWithAddedFinalizer": {
 			prepare: func(resource client.Object) {
-				ts.EnsureNS("remove-finalizer")
+				ts.EnsureNS("add-finalizer")
 				ts.EnsureResources(resource)
 				ts.Assert().Empty(resource.GetFinalizers())
 			},

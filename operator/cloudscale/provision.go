@@ -26,7 +26,7 @@ func NewObjectsUserPipeline() *ObjectsUserPipeline {
 
 // Run executes the business logic.
 func (p *ObjectsUserPipeline) Run(ctx context.Context) error {
-	pipe := pipeline.NewPipeline().
+	pipe := pipeline.NewPipeline().WithBeforeHooks(debugLogger(ctx)).
 		WithSteps(
 			pipeline.NewStepFromFunc("add finalizer", steps.AddFinalizerFn(ObjectsUserKey{}, userFinalizer)),
 			pipeline.NewStepFromFunc("create client", CreateCloudscaleClientFn(APIToken)),
@@ -46,24 +46,10 @@ func (p *ObjectsUserPipeline) Run(ctx context.Context) error {
 	return result.Err()
 }
 
-func errorHandler() pipeline.ResultHandler {
-	return func(ctx context.Context, result pipeline.Result) error {
-		if result.IsSuccessful() {
-			return nil
-		}
-		kube := steps.GetClientFromContext(ctx)
+func isObjectsUserIDKnown() func(ctx context.Context) bool {
+	return func(ctx context.Context) bool {
 		user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
-		log := controllerruntime.LoggerFrom(ctx)
-		recorder := steps.GetEventRecorderFromContext(ctx)
-
-		meta.SetStatusCondition(&user.Status.Conditions, conditions.NotReady())
-		meta.SetStatusCondition(&user.Status.Conditions, conditions.Failed(result.Err()))
-		err := kube.Status().Update(ctx, user)
-		if err != nil {
-			log.V(1).Error(err, "updating status failed")
-		}
-		recorder.Event(user, v1.EventTypeWarning, "Failed", result.Err().Error())
-		return result.Err()
+		return user.Status.UserID != ""
 	}
 }
 
@@ -77,10 +63,14 @@ func emitSuccessEventFn() func(ctx context.Context) error {
 	}
 }
 
-func isObjectsUserIDKnown() func(ctx context.Context) bool {
-	return func(ctx context.Context) bool {
+func markUserReadyFn() func(ctx context.Context) error {
+	return func(ctx context.Context) error {
+		kube := steps.GetClientFromContext(ctx)
 		user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
-		return user.Status.UserID != ""
+
+		meta.SetStatusCondition(&user.Status.Conditions, conditions.Ready())
+		meta.RemoveStatusCondition(&user.Status.Conditions, conditions.TypeFailed)
+		return kube.Status().Update(ctx, user)
 	}
 }
 
@@ -93,14 +83,10 @@ func getCommonLabels(instanceName string) labels.Set {
 	}
 }
 
-func markUserReadyFn() func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		kube := steps.GetClientFromContext(ctx)
-		user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
-
-		meta.SetStatusCondition(&user.Status.Conditions, conditions.Ready())
-		meta.RemoveStatusCondition(&user.Status.Conditions, conditions.TypeFailed)
-		return kube.Status().Update(ctx, user)
+func debugLogger(ctx context.Context) []pipeline.Listener {
+	log := controllerruntime.LoggerFrom(ctx)
+	hook := func(step pipeline.Step) {
+		log.V(2).Info(`Entering step "` + step.Name + `"`)
 	}
-
+	return []pipeline.Listener{hook}
 }

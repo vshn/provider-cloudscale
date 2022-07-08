@@ -4,7 +4,10 @@ import (
 	"context"
 	"github.com/go-logr/logr"
 	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
+	"github.com/vshn/appcat-service-s3/apis/conditions"
 	"github.com/vshn/appcat-service-s3/operator/steps"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/client-go/tools/record"
 	"time"
 
@@ -13,6 +16,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
 var userFinalizer = "s3.appcat.vshn.io/user-protection"
@@ -78,4 +83,25 @@ func logIfNotError(err error, log logr.Logger, level int, msg string, keysAndVal
 	}
 	log.V(level).Info(msg, keysAndValues...)
 	return nil
+}
+
+func errorHandler() pipeline.ResultHandler {
+	return func(ctx context.Context, result pipeline.Result) error {
+		if result.IsSuccessful() {
+			return nil
+		}
+		kube := steps.GetClientFromContext(ctx)
+		user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
+		log := controllerruntime.LoggerFrom(ctx)
+		recorder := steps.GetEventRecorderFromContext(ctx)
+
+		meta.SetStatusCondition(&user.Status.Conditions, conditions.NotReady())
+		meta.SetStatusCondition(&user.Status.Conditions, conditions.Failed(result.Err()))
+		err := kube.Status().Update(ctx, user)
+		if err != nil {
+			log.V(1).Error(err, "updating status failed")
+		}
+		recorder.Event(user, v1.EventTypeWarning, "Failed", result.Err().Error())
+		return result.Err()
+	}
 }

@@ -49,7 +49,7 @@ func CreateObjectsUserFn() func(ctx context.Context) error {
 		user.Status.UserID = csUser.ID
 
 		pipeline.StoreInContext(ctx, CloudscaleUserKey{}, csUser)
-		return logIfNotError(err, log, 1, "created objects user in cloudscale")
+		return logIfNotError(err, log, 1, "Created objects user in cloudscale")
 	}
 }
 
@@ -63,7 +63,7 @@ func GetObjectsUserFn() func(ctx context.Context) error {
 		csUser, err := csClient.ObjectsUsers.Get(ctx, user.Status.UserID)
 
 		pipeline.StoreInContext(ctx, CloudscaleUserKey{}, csUser)
-		return logIfNotError(err, log, 1, "fetched objects user in cloudscale")
+		return logIfNotError(err, log, 1, "Fetched objects user in cloudscale")
 	}
 }
 
@@ -98,7 +98,7 @@ func EnsureCredentialSecretFn() func(ctx context.Context) error {
 		})
 
 		pipeline.StoreInContext(ctx, UserCredentialSecretKey{}, secret)
-		return logIfNotError(err, log, 1, "ensured credential secret", "secretName", user.Spec.SecretRef)
+		return logIfNotError(err, log, 1, "Ensured credential secret", "secretName", user.Spec.SecretRef)
 	}
 }
 
