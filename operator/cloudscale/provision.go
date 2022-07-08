@@ -30,48 +30,42 @@ func (p *ObjectsUserPipeline) Run(ctx context.Context) error {
 		WithSteps(
 			pipeline.NewStepFromFunc("add finalizer", steps.AddFinalizerFn(ObjectsUserKey{}, userFinalizer)),
 			pipeline.NewStepFromFunc("create client", CreateCloudscaleClientFn(APIToken)),
-			pipeline.IfOrElse(isObjectsUserIDKnown(),
-				pipeline.NewStepFromFunc("fetch objects user", GetObjectsUserFn()),
+			pipeline.IfOrElse(isObjectsUserIDKnown,
+				pipeline.NewStepFromFunc("fetch objects user", GetObjectsUser),
 				pipeline.NewPipeline().WithNestedSteps("new user",
-					pipeline.NewStepFromFunc("create objects user", CreateObjectsUserFn()),
+					pipeline.NewStepFromFunc("create objects user", CreateObjectsUser),
 					pipeline.NewStepFromFunc("set user in status", steps.UpdateStatusFn(ObjectsUserKey{})),
-					pipeline.NewStepFromFunc("emit event", emitSuccessEventFn()),
+					pipeline.NewStepFromFunc("emit event", emitSuccessEvent),
 				),
 			),
-			pipeline.NewStepFromFunc("ensure credential secret", EnsureCredentialSecretFn()),
-			pipeline.NewStepFromFunc("set status condition", markUserReadyFn()),
+			pipeline.NewStepFromFunc("ensure credential secret", EnsureCredentialSecret),
+			pipeline.NewStepFromFunc("set status condition", markUserReady),
 		).
 		WithFinalizer(errorHandler())
 	result := pipe.RunWithContext(ctx)
 	return result.Err()
 }
 
-func isObjectsUserIDKnown() func(ctx context.Context) bool {
-	return func(ctx context.Context) bool {
-		user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
-		return user.Status.UserID != ""
-	}
+func isObjectsUserIDKnown(ctx context.Context) bool {
+	user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
+	return user.Status.UserID != ""
 }
 
-func emitSuccessEventFn() func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		recorder := steps.GetEventRecorderFromContext(ctx)
-		user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(client.Object)
+func emitSuccessEvent(ctx context.Context) error {
+	recorder := steps.GetEventRecorderFromContext(ctx)
+	user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(client.Object)
 
-		recorder.Event(user, v1.EventTypeNormal, "Created", "ObjectsUser successfully created")
-		return nil
-	}
+	recorder.Event(user, v1.EventTypeNormal, "Created", "ObjectsUser successfully created")
+	return nil
 }
 
-func markUserReadyFn() func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		kube := steps.GetClientFromContext(ctx)
-		user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
+func markUserReady(ctx context.Context) error {
+	kube := steps.GetClientFromContext(ctx)
+	user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
 
-		meta.SetStatusCondition(&user.Status.Conditions, conditions.Ready())
-		meta.RemoveStatusCondition(&user.Status.Conditions, conditions.TypeFailed)
-		return kube.Status().Update(ctx, user)
-	}
+	meta.SetStatusCondition(&user.Status.Conditions, conditions.Ready())
+	meta.RemoveStatusCondition(&user.Status.Conditions, conditions.TypeFailed)
+	return kube.Status().Update(ctx, user)
 }
 
 func getCommonLabels(instanceName string) labels.Set {

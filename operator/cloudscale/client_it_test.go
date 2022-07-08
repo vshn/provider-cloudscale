@@ -44,7 +44,7 @@ func (ts *CloudscaleClientSuite) Test_EnsureCredentialSecretFn() {
 	ts.EnsureNS(user.Namespace)
 
 	// Act
-	err := EnsureCredentialSecretFn()(ts.Context)
+	err := EnsureCredentialSecret(ts.Context)
 	ts.Require().NoError(err)
 
 	// Assert
