@@ -30,19 +30,21 @@ func main() {
 }
 
 func generateCloudscaleObjectsUserSample() {
-	spec := newPostgresqlStandaloneSample()
+	spec := newObjectsUserSample()
 	serialize(spec, true)
 }
 
-func newPostgresqlStandaloneSample() *cloudscalev1.ObjectsUser {
+func newObjectsUserSample() *cloudscalev1.ObjectsUser {
 	return &cloudscalev1.ObjectsUser{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: cloudscalev1.ObjectsUserGroupVersionKind.GroupVersion().String(),
 			Kind:       cloudscalev1.ObjectsUserKind,
 		},
 		ObjectMeta: metav1.ObjectMeta{Name: "my-cloudscale-user", Namespace: "default", Generation: 1},
-		Spec:       cloudscalev1.ObjectsUserSpec{},
-		Status:     cloudscalev1.ObjectsUserStatus{},
+		Spec: cloudscalev1.ObjectsUserSpec{
+			SecretRef: "my-cloudscale-user-credentials",
+		},
+		Status: cloudscalev1.ObjectsUserStatus{},
 	}
 }
 

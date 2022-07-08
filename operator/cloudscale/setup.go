@@ -15,7 +15,8 @@ func SetupController(mgr ctrl.Manager) error {
 		Named(name).
 		For(&cloudscalev1.ObjectsUser{}).
 		WithEventFilter(predicate.Or(predicate.GenerationChangedPredicate{})).
-		Complete(&PostgresStandaloneReconciler{
-			client: mgr.GetClient(),
+		Complete(&ObjectsUserReconciler{
+			client:   mgr.GetClient(),
+			recorder: mgr.GetEventRecorderFor(name),
 		})
 }

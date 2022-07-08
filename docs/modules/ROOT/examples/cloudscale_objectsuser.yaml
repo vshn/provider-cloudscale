@@ -3,4 +3,5 @@ kind: ObjectsUser
 metadata:
   name: my-cloudscale-user
   namespace: default
-spec: {}
+spec:
+  secretRef: my-cloudscale-user-credentials

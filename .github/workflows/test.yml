@@ -35,7 +35,7 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Run tests
-        run: make test
+        run: make test-integration
 
       - name: Upload code coverage report to Code Climate
         uses: paambaati/codeclimate-action@v3.0.0
