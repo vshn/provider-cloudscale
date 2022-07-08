@@ -16,6 +16,7 @@ func SetupController(mgr ctrl.Manager) error {
 		For(&cloudscalev1.ObjectsUser{}).
 		WithEventFilter(predicate.Or(predicate.GenerationChangedPredicate{})).
 		Complete(&ObjectsUserReconciler{
-			client: mgr.GetClient(),
+			client:   mgr.GetClient(),
+			recorder: mgr.GetEventRecorderFor(name),
 		})
 }

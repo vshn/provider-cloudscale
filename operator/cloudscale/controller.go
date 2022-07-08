@@ -5,6 +5,7 @@ import (
 	"github.com/go-logr/logr"
 	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
 	"github.com/vshn/appcat-service-s3/operator/steps"
+	"k8s.io/client-go/tools/record"
 	"time"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
@@ -24,7 +25,8 @@ var userFinalizer = "s3.appcat.vshn.io/user-protection"
 
 // ObjectsUserReconciler reconciles cloudscalev1.ObjectsUser.
 type ObjectsUserReconciler struct {
-	client client.Client
+	client   client.Client
+	recorder record.EventRecorder
 }
 
 // ObjectsUserKey identifies the ObjectsUser in the context.
@@ -47,6 +49,7 @@ func (r *ObjectsUserReconciler) Reconcile(ctx context.Context, request reconcile
 	}
 	pipeline.StoreInContext(ctx, ObjectsUserKey{}, obj)
 	steps.SetClientInContext(ctx, r.client)
+	steps.SetEventRecorderInContext(ctx, r.recorder)
 	if !obj.DeletionTimestamp.IsZero() {
 		return r.Delete(ctx)
 	}

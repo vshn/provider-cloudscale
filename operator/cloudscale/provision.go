@@ -5,8 +5,13 @@ import (
 	"fmt"
 	pipeline "github.com/ccremer/go-command-pipeline"
 	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
+	"github.com/vshn/appcat-service-s3/apis/conditions"
 	"github.com/vshn/appcat-service-s3/operator/steps"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/labels"
+	controllerruntime "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 )
 
@@ -24,34 +29,50 @@ func (p *ObjectsUserPipeline) Run(ctx context.Context) error {
 	pipe := pipeline.NewPipeline().
 		WithSteps(
 			pipeline.NewStepFromFunc("add finalizer", steps.AddFinalizerFn(ObjectsUserKey{}, userFinalizer)),
-			pipeline.NewStepFromFunc("validate spec", validateSpec()),
 			pipeline.NewStepFromFunc("create client", CreateCloudscaleClientFn(APIToken)),
 			pipeline.IfOrElse(isObjectsUserIDKnown(),
 				pipeline.NewStepFromFunc("fetch objects user", GetObjectsUserFn()),
 				pipeline.NewPipeline().WithNestedSteps("new user",
 					pipeline.NewStepFromFunc("create objects user", CreateObjectsUserFn()),
 					pipeline.NewStepFromFunc("set user in status", steps.UpdateStatusFn(ObjectsUserKey{})),
+					pipeline.NewStepFromFunc("emit event", emitSuccessEventFn()),
 				),
 			),
 			pipeline.NewStepFromFunc("ensure credential secret", EnsureCredentialSecretFn()),
 			pipeline.NewStepFromFunc("set status condition", markUserReadyFn()),
 		).
-		)
+		WithFinalizer(errorHandler())
 	result := pipe.RunWithContext(ctx)
-	if result.IsFailed() {
-		// TODO: Add failed condition
-		// TODO: Emit event
-		return result.Err()
-	}
-	return nil
+	return result.Err()
 }
 
-func validateSpec() func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
-		if user.Spec.SecretRef == "" {
-			return fmt.Errorf("spec.secretRef cannot be empty")
+func errorHandler() pipeline.ResultHandler {
+	return func(ctx context.Context, result pipeline.Result) error {
+		if result.IsSuccessful() {
+			return nil
 		}
+		kube := steps.GetClientFromContext(ctx)
+		user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
+		log := controllerruntime.LoggerFrom(ctx)
+		recorder := steps.GetEventRecorderFromContext(ctx)
+
+		meta.SetStatusCondition(&user.Status.Conditions, conditions.NotReady())
+		meta.SetStatusCondition(&user.Status.Conditions, conditions.Failed(result.Err()))
+		err := kube.Status().Update(ctx, user)
+		if err != nil {
+			log.V(1).Error(err, "updating status failed")
+		}
+		recorder.Event(user, v1.EventTypeWarning, "Failed", result.Err().Error())
+		return result.Err()
+	}
+}
+
+func emitSuccessEventFn() func(ctx context.Context) error {
+	return func(ctx context.Context) error {
+		recorder := steps.GetEventRecorderFromContext(ctx)
+		user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(client.Object)
+
+		recorder.Event(user, v1.EventTypeNormal, "Created", "ObjectsUser successfully created")
 		return nil
 	}
 }
