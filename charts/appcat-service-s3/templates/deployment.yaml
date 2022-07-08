@@ -38,6 +38,13 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          envFrom:
+            - secretRef:
+                {{ if .Values.tokens.externalSecretName -}}
+                name: {{ .Values.tokens.externalSecretName }}
+                {{- else -}}
+                name: {{ include "appcat-service-s3.fullname" . }}
+                {{- end }}
           ports:
             - name: metrics
               containerPort: 8080
