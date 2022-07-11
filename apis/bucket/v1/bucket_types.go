@@ -51,6 +51,14 @@ type Bucket struct {
 	Status BucketStatus `json:"status,omitempty"`
 }
 
+// GetBucketName returns the spec.bucketName if given, otherwise defaults to metadata.name.
+func (in *Bucket) GetBucketName() string {
+	if in.Spec.BucketName == "" {
+		return in.Name
+	}
+	return in.Spec.BucketName
+}
+
 // +kubebuilder:object:root=true
 
 // BucketList contains a list of Bucket
