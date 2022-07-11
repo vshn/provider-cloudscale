@@ -38,6 +38,12 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - events
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
   - secrets
   verbs:
   - create
@@ -47,3 +53,24 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - s3.appcat.vshn.io
+  resources:
+  - buckets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - s3.appcat.vshn.io
+  resources:
+  - buckets/finalizers
+  - buckets/status
+  verbs:
+  - get
+  - patch
+  - update

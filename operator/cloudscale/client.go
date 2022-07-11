@@ -3,8 +3,10 @@ package cloudscale
 import (
 	"context"
 	"fmt"
+
 	pipeline "github.com/ccremer/go-command-pipeline"
 	cloudscalesdk "github.com/cloudscale-ch/cloudscale-go-sdk/v2"
+	bucketv1 "github.com/vshn/appcat-service-s3/apis/bucket/v1"
 	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
 	"github.com/vshn/appcat-service-s3/operator/steps"
 	"golang.org/x/oauth2"
@@ -86,8 +88,8 @@ func EnsureCredentialSecret(ctx context.Context) error {
 		if secret.StringData == nil {
 			secret.StringData = map[string]string{}
 		}
-		secret.StringData["AWS_ACCESS_KEY_ID"] = csUser.Keys[0]["access_key"]
-		secret.StringData["AWS_SECRET_ACCESS_KEY"] = csUser.Keys[0]["secret_key"]
+		secret.StringData[bucketv1.AccessKeyIDName] = csUser.Keys[0]["access_key"]
+		secret.StringData[bucketv1.SecretAccessKeyName] = csUser.Keys[0]["secret_key"]
 		controllerutil.AddFinalizer(secret, userFinalizer)
 		return controllerutil.SetOwnerReference(user, secret, kube.Scheme())
 	})
