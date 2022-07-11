@@ -35,13 +35,6 @@ type BucketSpec struct {
 	Region string `json:"region"`
 }
 
-// BucketStatus represents the observed state of a Bucket.
-type BucketStatus struct {
-	Conditions []metav1.Condition `json:"conditions,omitempty"`
-	// BucketName is the name of the actual bucket.
-	BucketName string `json:"bucketName,omitempty"`
-}
-
 // +kubebuilder:object:root=true
 // +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
