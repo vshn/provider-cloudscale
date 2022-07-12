@@ -60,6 +60,16 @@ func GetObjectsUser(ctx context.Context) error {
 	return logIfNotError(err, log, 1, "Fetched objects user in cloudscale")
 }
 
+// DeleteObjectsUser deletes the objects user from the project associated with the API token.
+func DeleteObjectsUser(ctx context.Context) error {
+	csClient := steps.GetFromContextOrPanic(ctx, CloudscaleClientKey{}).(*cloudscalesdk.Client)
+	user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
+	log := controllerruntime.LoggerFrom(ctx)
+
+	err := csClient.ObjectsUsers.Delete(ctx, user.Status.UserID)
+	return logIfNotError(err, log, 1, "Deleted objects user in cloudscale", "userID", user.Status.UserID)
+}
+
 func checkUserForKeys(user *cloudscalesdk.ObjectsUser) error {
 	if len(user.Keys) == 0 {
 		return fmt.Errorf("the returned objects user has no key pairs: %q", user.ID)
