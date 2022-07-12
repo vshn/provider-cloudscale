@@ -9,6 +9,7 @@ import (
 const (
 	ReasonAvailable          = "Available"
 	ReasonProvisioningFailed = "ProvisioningFailed"
+	ReasonDeletionFailed     = "DeletionFailed"
 )
 
 const (

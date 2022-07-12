@@ -16,7 +16,7 @@ import (
 //  - updates the status on the resource (if updating status fails, the error will only be logged, not bubbled up)
 //  - emits a warning event with the error message
 // The object must implement conditions.ObjectWithConditions.
-func ErrorHandlerFn(objKey any) pipeline.ResultHandler {
+func ErrorHandlerFn(objKey any, reason string) pipeline.ResultHandler {
 	return func(ctx context.Context, result pipeline.Result) error {
 		if result.IsSuccessful() {
 			return nil
@@ -27,9 +27,11 @@ func ErrorHandlerFn(objKey any) pipeline.ResultHandler {
 		recorder := GetEventRecorderFromContext(ctx)
 
 		conds := obj.GetConditions()
+		failedCond := conditions.Failed(result.Err())
+		failedCond.Reason = reason
 
 		meta.SetStatusCondition(&conds, conditions.NotReady())
-		meta.SetStatusCondition(&conds, conditions.Failed(result.Err()))
+		meta.SetStatusCondition(&conds, failedCond)
 		obj.SetConditions(conds)
 		err := kube.Status().Update(ctx, obj)
 		if err != nil {

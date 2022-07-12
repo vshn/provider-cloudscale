@@ -3,6 +3,8 @@ package steps
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/stretchr/testify/suite"
 	bucketv1 "github.com/vshn/appcat-service-s3/apis/bucket/v1"
@@ -11,7 +13,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 type ErrorSuite struct {
@@ -50,7 +51,7 @@ func (ts *ErrorSuite) Test_ErrorHandler() {
 		WithSteps(pipeline.NewStepFromFunc("create error", func(ctx context.Context) error {
 			return fmt.Errorf("error")
 		})).
-		WithFinalizer(ErrorHandlerFn(objKey{})).
+		WithFinalizer(ErrorHandlerFn(objKey{}, conditions.ReasonProvisioningFailed)).
 		RunWithContext(ts.Context)
 
 	// Assert
@@ -65,5 +66,6 @@ func (ts *ErrorSuite) Test_ErrorHandler() {
 	failedCondition := obj.Status.Conditions[1]
 	ts.Assert().Equal(metav1.ConditionTrue, failedCondition.Status)
 	ts.Assert().Equal(conditions.TypeFailed, failedCondition.Type)
+	ts.Assert().Equal(conditions.ReasonProvisioningFailed, failedCondition.Reason)
 	ts.Assert().Equal(`step "create error" failed: error`, failedCondition.Message, "error message in condition")
 }

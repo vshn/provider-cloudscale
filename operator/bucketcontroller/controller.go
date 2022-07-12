@@ -58,7 +58,7 @@ func (r *BucketReconciler) Reconcile(ctx context.Context, request reconcile.Requ
 func (r *BucketReconciler) Provision(ctx context.Context) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
 	log.Info("Provisioning resource")
-	p := NewBucketPipeline()
+	p := NewProvisioningPipeline()
 	err := p.Run(ctx)
 	return reconcile.Result{}, err
 }
@@ -67,7 +67,9 @@ func (r *BucketReconciler) Provision(ctx context.Context) (reconcile.Result, err
 func (r *BucketReconciler) Delete(ctx context.Context) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
 	log.Info("Deleting resource")
-	return reconcile.Result{Requeue: true}, nil
+	p := NewDeletionPipeline()
+	err := p.Run(ctx)
+	return reconcile.Result{Requeue: true}, err
 }
 
 func logIfNotError(err error, log logr.Logger, level int, msg string, keysAndValues ...any) error {
