@@ -26,7 +26,7 @@ type BucketSpec struct {
 	// Defaults to `metadata.name` if unset.
 	// Cannot be changed after bucket is created.
 	// Name must be acceptable by the S3 protocol, which follows RFC 1123.
-	// Be aware that S3 providers may require a unique across the platform or region.
+	// Be aware that S3 providers may require a unique name across the platform or region.
 	BucketName string `json:"bucketName,omitempty"`
 
 	// +kubebuilder:validation:Required
@@ -39,6 +39,9 @@ type BucketSpec struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="Endpoint",type="string",JSONPath=".spec.endpointURL"
+// +kubebuilder:printcolumn:name="Bucket Name",type="string",JSONPath=".status.bucketName"
+// +kubebuilder:printcolumn:name="Region",type="string",JSONPath=".spec.region"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Namespaced,categories={appcat,s3}
 

@@ -2,6 +2,7 @@ package steps
 
 import (
 	"context"
+
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/vshn/appcat-service-s3/apis/conditions"
 	v1 "k8s.io/api/core/v1"
@@ -14,6 +15,7 @@ import (
 //  - sets the Ready condition to False
 //  - updates the status on the resource (if updating status fails, the error will only be logged, not bubbled up)
 //  - emits a warning event with the error message
+// The object must implement conditions.ObjectWithConditions.
 func ErrorHandlerFn(objKey any) pipeline.ResultHandler {
 	return func(ctx context.Context, result pipeline.Result) error {
 		if result.IsSuccessful() {

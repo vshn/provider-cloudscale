@@ -2,14 +2,13 @@ package cloudscale
 
 import (
 	"context"
+
+	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/go-logr/logr"
 	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
 	"github.com/vshn/appcat-service-s3/operator/steps"
-	"k8s.io/client-go/tools/record"
-	"time"
-
-	pipeline "github.com/ccremer/go-command-pipeline"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -70,7 +69,7 @@ func (r *ObjectsUserReconciler) Provision(ctx context.Context) (reconcile.Result
 func (r *ObjectsUserReconciler) Delete(ctx context.Context) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
 	log.Info("Deleting resource")
-	return reconcile.Result{RequeueAfter: 1 * time.Second}, nil
+	return reconcile.Result{Requeue: true}, nil
 }
 
 func logIfNotError(err error, log logr.Logger, level int, msg string, keysAndValues ...any) error {

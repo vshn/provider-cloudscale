@@ -25,6 +25,15 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
+    - jsonPath: .spec.endpointURL
+      name: Endpoint
+      type: string
+    - jsonPath: .status.bucketName
+      name: Bucket Name
+      type: string
+    - jsonPath: .spec.region
+      name: Region
+      type: string
     name: v1
     schema:
       openAPIV3Schema:
@@ -49,8 +58,8 @@ spec:
                 description: BucketName is the name of the bucket to create. Defaults
                   to `metadata.name` if unset. Cannot be changed after bucket is created.
                   Name must be acceptable by the S3 protocol, which follows RFC 1123.
-                  Be aware that S3 providers may require a unique across the platform
-                  or region.
+                  Be aware that S3 providers may require a unique name across the
+                  platform or region.
                 type: string
               credentialsSecretRef:
                 description: CredentialsSecretRef contains the name of the Secret

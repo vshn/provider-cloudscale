@@ -2,6 +2,7 @@ package steps
 
 import (
 	"context"
+
 	"github.com/vshn/appcat-service-s3/apis/conditions"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -20,7 +21,7 @@ func UpdateStatusFn(objKey any) func(ctx context.Context) error {
 // MarkObjectReadyFn updates the resource identified by objKey with following conditions:
 //  Ready: True
 //  Failed: <Removed>
-// The resource must implement conditions.ObjectWithConditions interfaces.
+// The resource must implement conditions.ObjectWithConditions interface.
 func MarkObjectReadyFn(objKey any) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
 		kube := GetClientFromContext(ctx)

@@ -32,7 +32,7 @@ func CreateS3Client(ctx context.Context) error {
 
 	host := parsed.Host
 	if parsed.Host == "" {
-		host = parsed.Path // if not scheme is given, it's parsed as a path -.-
+		host = parsed.Path // if no scheme is given, it's parsed as a path -.-
 	}
 	s3Client, err := minio.New(host, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),

@@ -2,7 +2,6 @@ package bucketcontroller
 
 import (
 	"context"
-	"time"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/go-logr/logr"
@@ -68,7 +67,7 @@ func (r *BucketReconciler) Provision(ctx context.Context) (reconcile.Result, err
 func (r *BucketReconciler) Delete(ctx context.Context) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
 	log.Info("Deleting resource")
-	return reconcile.Result{RequeueAfter: 1 * time.Second}, nil
+	return reconcile.Result{Requeue: true}, nil
 }
 
 func logIfNotError(err error, log logr.Logger, level int, msg string, keysAndValues ...any) error {
