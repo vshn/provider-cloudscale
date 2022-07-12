@@ -4,6 +4,8 @@ package cloudscale
 
 import (
 	"context"
+	"testing"
+
 	pipeline "github.com/ccremer/go-command-pipeline"
 	cloudscalesdk "github.com/cloudscale-ch/cloudscale-go-sdk/v2"
 	"github.com/stretchr/testify/suite"
@@ -13,23 +15,22 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"testing"
 )
 
-type CloudscaleClientSuite struct {
+type ProvisionPipelineSuite struct {
 	operatortest.Suite
 }
 
-func TestFinalizerSuite(t *testing.T) {
-	suite.Run(t, new(CloudscaleClientSuite))
+func TestProvisionPipelineSuite(t *testing.T) {
+	suite.Run(t, new(ProvisionPipelineSuite))
 }
 
-func (ts *CloudscaleClientSuite) BeforeTest(suiteName, testName string) {
+func (ts *ProvisionPipelineSuite) BeforeTest(suiteName, testName string) {
 	ts.Context = pipeline.MutableContext(context.Background())
 	steps.SetClientInContext(ts.Context, ts.Client)
 }
 
-func (ts *CloudscaleClientSuite) Test_EnsureCredentialSecretFn() {
+func (ts *ProvisionPipelineSuite) Test_EnsureCredentialSecretFn() {
 	// Arrange
 	user := &cloudscalev1.ObjectsUser{
 		ObjectMeta: metav1.ObjectMeta{Name: "user", Namespace: "namespace", UID: "uid"},
@@ -44,7 +45,7 @@ func (ts *CloudscaleClientSuite) Test_EnsureCredentialSecretFn() {
 	ts.EnsureNS(user.Namespace)
 
 	// Act
-	err := EnsureCredentialSecret(ts.Context)
+	err := ensureCredentialSecret(ts.Context)
 	ts.Require().NoError(err)
 
 	// Assert

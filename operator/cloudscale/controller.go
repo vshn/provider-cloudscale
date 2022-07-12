@@ -60,7 +60,7 @@ func (r *ObjectsUserReconciler) Reconcile(ctx context.Context, request reconcile
 func (r *ObjectsUserReconciler) Provision(ctx context.Context) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
 	log.Info("Provisioning resource")
-	p := NewObjectsUserPipeline()
+	p := NewProvisioningPipeline()
 	err := p.Run(ctx)
 	return reconcile.Result{}, err
 }
