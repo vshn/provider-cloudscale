@@ -71,3 +71,15 @@ func CreateS3Bucket(ctx context.Context) error {
 	bucket.Status.BucketName = bucketName
 	return nil
 }
+
+// DeleteS3Bucket deletes the bucket.
+// NOTE: The removal fails if there are still objects in the bucket.
+// This func does not recursively delete all objects beforehand.
+func DeleteS3Bucket(ctx context.Context) error {
+	s3Client := steps.GetFromContextOrPanic(ctx, S3ClientKey{}).(*minio.Client)
+	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*bucketv1.Bucket)
+
+	bucketName := bucket.Status.BucketName
+	err := s3Client.RemoveBucket(ctx, bucketName)
+	return err
+}
