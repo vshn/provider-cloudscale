@@ -13,22 +13,22 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// BucketPipeline provisions ObjectsUsers on cloudscale.ch
-type BucketPipeline struct{}
+// ProvisioningPipeline provisions Buckets using S3 client.
+type ProvisioningPipeline struct{}
 
 // BucketFinalizer is the name of the finalizer to protect unchecked deletions.
 const BucketFinalizer = "s3.appcat.vshn.io/bucket-protection"
 
-// NewBucketPipeline returns a new instance of BucketPipeline.
-func NewBucketPipeline() *BucketPipeline {
-	return &BucketPipeline{}
+// NewProvisioningPipeline returns a new instance of ProvisioningPipeline.
+func NewProvisioningPipeline() *ProvisioningPipeline {
+	return &ProvisioningPipeline{}
 }
 
 // CredentialsSecretKey identifies the loaded credentials secret in the context.
 type CredentialsSecretKey struct{}
 
 // Run executes the business logic.
-func (p *BucketPipeline) Run(ctx context.Context) error {
+func (p *ProvisioningPipeline) Run(ctx context.Context) error {
 	pipe := pipeline.NewPipeline().WithBeforeHooks(steps.DebugLogger(ctx)).
 		WithSteps(
 			pipeline.NewStepFromFunc("add finalizer", steps.AddFinalizerFn(BucketKey{}, BucketFinalizer)),
@@ -39,7 +39,7 @@ func (p *BucketPipeline) Run(ctx context.Context) error {
 				pipeline.NewStepFromFunc("create S3 client", CreateS3Client),
 				pipeline.NewStepFromFunc("create bucket", CreateS3Bucket),
 				pipeline.NewStepFromFunc("set bucket name in status", steps.UpdateStatusFn(BucketKey{})),
-				pipeline.NewStepFromFunc("emit event", emitSuccessEvent),
+				pipeline.NewStepFromFunc("emit event", emitCreationEvent),
 			)),
 			pipeline.NewStepFromFunc("set status condition", steps.MarkObjectReadyFn(BucketKey{})),
 		).
@@ -95,10 +95,10 @@ func validateSecret(ctx context.Context) error {
 	return nil
 }
 
-func emitSuccessEvent(ctx context.Context) error {
+func emitCreationEvent(ctx context.Context) error {
 	recorder := steps.GetEventRecorderFromContext(ctx)
-	user := steps.GetFromContextOrPanic(ctx, BucketKey{}).(client.Object)
+	obj := steps.GetFromContextOrPanic(ctx, BucketKey{}).(client.Object)
 
-	recorder.Event(user, corev1.EventTypeNormal, "Created", "Bucket successfully created")
+	recorder.Event(obj, corev1.EventTypeNormal, "Created", "Bucket successfully created")
 	return nil
 }
