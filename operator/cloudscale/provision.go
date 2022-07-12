@@ -3,13 +3,15 @@ package cloudscale
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	pipeline "github.com/ccremer/go-command-pipeline"
 	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
+	"github.com/vshn/appcat-service-s3/apis/conditions"
 	"github.com/vshn/appcat-service-s3/operator/steps"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 )
 
 // ObjectsUserPipeline provisions ObjectsUsers on cloudscale.ch
@@ -38,7 +40,7 @@ func (p *ObjectsUserPipeline) Run(ctx context.Context) error {
 			pipeline.NewStepFromFunc("ensure credential secret", EnsureCredentialSecret),
 			pipeline.NewStepFromFunc("set status condition", steps.MarkObjectReadyFn(ObjectsUserKey{})),
 		).
-		WithFinalizer(steps.ErrorHandlerFn(ObjectsUserKey{}))
+		WithFinalizer(steps.ErrorHandlerFn(ObjectsUserKey{}, conditions.ReasonProvisioningFailed))
 	result := pipe.RunWithContext(ctx)
 	return result.Err()
 }

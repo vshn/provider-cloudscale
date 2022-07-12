@@ -6,6 +6,7 @@ import (
 
 	pipeline "github.com/ccremer/go-command-pipeline"
 	bucketv1 "github.com/vshn/appcat-service-s3/apis/bucket/v1"
+	"github.com/vshn/appcat-service-s3/apis/conditions"
 	"github.com/vshn/appcat-service-s3/operator/steps"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -43,7 +44,7 @@ func (p *ProvisioningPipeline) Run(ctx context.Context) error {
 			)),
 			pipeline.NewStepFromFunc("set status condition", steps.MarkObjectReadyFn(BucketKey{})),
 		).
-		WithFinalizer(steps.ErrorHandlerFn(BucketKey{}))
+		WithFinalizer(steps.ErrorHandlerFn(BucketKey{}, conditions.ReasonProvisioningFailed))
 	result := pipe.RunWithContext(ctx)
 	return result.Err()
 }
