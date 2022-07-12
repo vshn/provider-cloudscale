@@ -8,6 +8,7 @@ import (
 	"github.com/vshn/appcat-service-s3/apis/conditions"
 	"github.com/vshn/appcat-service-s3/operator/steps"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -28,10 +29,9 @@ func (p *DeletionPipeline) Run(ctx context.Context) error {
 			pipeline.If(isObjectsUserIDKnown, pipeline.NewPipeline().WithNestedSteps("deprovision objects user",
 				pipeline.NewStepFromFunc("create client", CreateCloudscaleClientFn(APIToken)),
 				pipeline.NewStepFromFunc("delete objects user", DeleteObjectsUser),
-				pipeline.NewStepFromFunc("fetch credentials secret", fetchCredentialsSecret),
 				// Note: We do not need to check if there are Bucket resources still requiring the Secret.
 				// Cloudscale's API returns an error if there are still buckets existing for that user, which ultimately also ends up as a Failed condition in the ObjectsUser resource.
-				pipeline.NewStepFromFunc("delete finalizer from secret", steps.RemoveFinalizerFn(UserCredentialSecretKey{}, userFinalizer)),
+				pipeline.NewStepFromFunc("delete finalizer from secret", deleteFinalizerFromSecret),
 				pipeline.NewStepFromFunc("emit event", emitDeletionEvent),
 			)),
 			pipeline.NewStepFromFunc("remove finalizer", steps.RemoveFinalizerFn(ObjectsUserKey{}, userFinalizer)),
@@ -41,15 +41,21 @@ func (p *DeletionPipeline) Run(ctx context.Context) error {
 	return result.Err()
 }
 
-func fetchCredentialsSecret(ctx context.Context) error {
+func deleteFinalizerFromSecret(ctx context.Context) error {
 	kube := steps.GetClientFromContext(ctx)
 	user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
 	log := controllerruntime.LoggerFrom(ctx)
 
 	secret := &corev1.Secret{}
 	err := kube.Get(ctx, types.NamespacedName{Name: user.Spec.SecretRef, Namespace: user.Namespace}, secret)
-	pipeline.StoreInContext(ctx, UserCredentialSecretKey{}, secret)
-	return logIfNotError(err, log, 1, "Fetched credentials secret", "secretName", user.Spec.SecretRef)
+	if apierrors.IsNotFound(err) {
+		return nil // doesn't exist anymore, ignore
+	}
+	if err != nil {
+		return err // some other error
+	}
+	err = steps.RemoveFinalizerFn(ObjectsUserKey{}, userFinalizer)(ctx)
+	return logIfNotError(err, log, 1, "Deleted finalizer from credentials secret", "secretName", user.Spec.SecretRef)
 }
 
 func emitDeletionEvent(ctx context.Context) error {
