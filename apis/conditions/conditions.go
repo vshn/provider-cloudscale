@@ -1,6 +1,9 @@
 package conditions
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
 
 // Reasons that give more context to conditions
 const (
@@ -44,4 +47,13 @@ func Failed(err error) metav1.Condition {
 		Reason:             ReasonProvisioningFailed,
 		Message:            err.Error(),
 	}
+}
+
+// ObjectWithConditions represents an object that has status conditions.
+type ObjectWithConditions interface {
+	client.Object
+	// GetConditions returns the currently active conditions.
+	GetConditions() []metav1.Condition
+	// SetConditions sets the active conditions to the given conditions.
+	SetConditions(v []metav1.Condition)
 }

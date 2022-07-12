@@ -1,11 +1,11 @@
-package cloudscale
+package bucketcontroller
 
 import (
 	"context"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/go-logr/logr"
-	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
+	bucketv1 "github.com/vshn/appcat-service-s3/apis/bucket/v1"
 	"github.com/vshn/appcat-service-s3/operator/steps"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/record"
@@ -14,30 +14,28 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-var userFinalizer = "s3.appcat.vshn.io/user-protection"
-
-// +kubebuilder:rbac:groups=cloudscale.s3.appcat.vshn.io,resources=objectsusers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=cloudscale.s3.appcat.vshn.io,resources=objectsusers/status;objectsusers/finalizers,verbs=get;update;patch
+// +kubebuilder:rbac:groups=s3.appcat.vshn.io,resources=buckets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=s3.appcat.vshn.io,resources=buckets/status;buckets/finalizers,verbs=get;update;patch
 
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;list;create;update
 // +kubebuilder:rbac:groups=core,resources=events,verbs=create
 
-// ObjectsUserReconciler reconciles cloudscalev1.ObjectsUser.
-type ObjectsUserReconciler struct {
+// BucketReconciler reconciles Bucket resources.
+type BucketReconciler struct {
 	client   client.Client
 	recorder record.EventRecorder
 }
 
-// ObjectsUserKey identifies the ObjectsUser in the context.
-type ObjectsUserKey struct{}
+// BucketKey identifies a bucketv1.Bucket in the context.
+type BucketKey struct{}
 
 // Reconcile implements reconcile.Reconciler.
-func (r *ObjectsUserReconciler) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
+func (r *BucketReconciler) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	ctx = pipeline.MutableContext(ctx)
 	log := ctrl.LoggerFrom(ctx)
 	log.V(1).Info("Reconciling")
-	obj := &cloudscalev1.ObjectsUser{}
+	obj := &bucketv1.Bucket{}
 	err := r.client.Get(ctx, request.NamespacedName, obj)
 	if err != nil && apierrors.IsNotFound(err) {
 		// doesn't exist anymore, nothing to do
@@ -47,7 +45,7 @@ func (r *ObjectsUserReconciler) Reconcile(ctx context.Context, request reconcile
 		// some other error
 		return reconcile.Result{}, err
 	}
-	pipeline.StoreInContext(ctx, ObjectsUserKey{}, obj)
+	pipeline.StoreInContext(ctx, BucketKey{}, obj)
 	steps.SetClientInContext(ctx, r.client)
 	steps.SetEventRecorderInContext(ctx, r.recorder)
 	if !obj.DeletionTimestamp.IsZero() {
@@ -57,16 +55,16 @@ func (r *ObjectsUserReconciler) Reconcile(ctx context.Context, request reconcile
 }
 
 // Provision reconciles the given object.
-func (r *ObjectsUserReconciler) Provision(ctx context.Context) (reconcile.Result, error) {
+func (r *BucketReconciler) Provision(ctx context.Context) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
 	log.Info("Provisioning resource")
-	p := NewObjectsUserPipeline()
+	p := NewBucketPipeline()
 	err := p.Run(ctx)
 	return reconcile.Result{}, err
 }
 
 // Delete prepares the given object for deletion.
-func (r *ObjectsUserReconciler) Delete(ctx context.Context) (reconcile.Result, error) {
+func (r *BucketReconciler) Delete(ctx context.Context) (reconcile.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
 	log.Info("Deleting resource")
 	return reconcile.Result{Requeue: true}, nil

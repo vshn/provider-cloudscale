@@ -1,0 +1,12 @@
+apiVersion: s3.appcat.vshn.io/v1
+kind: Bucket
+metadata:
+  creationTimestamp: null
+  name: bucket
+  namespace: default
+spec:
+  bucketName: my-appcat-test-bucket
+  credentialsSecretRef: my-cloudscale-user-credentials
+  endpointURL: objects.rma.cloudscale.ch
+  region: rma
+status: {}

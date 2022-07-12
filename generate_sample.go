@@ -11,6 +11,7 @@ package main
 import (
 	"fmt"
 	"github.com/vshn/appcat-service-s3/apis"
+	bucketv1 "github.com/vshn/appcat-service-s3/apis/bucket/v1"
 	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
 	"io"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,10 +28,16 @@ var scheme = runtime.NewScheme()
 func main() {
 	failIfError(apis.AddToScheme(scheme))
 	generateCloudscaleObjectsUserSample()
+	generateBucketSample()
 }
 
 func generateCloudscaleObjectsUserSample() {
 	spec := newObjectsUserSample()
+	serialize(spec, true)
+}
+
+func generateBucketSample() {
+	spec := newBucketSample()
 	serialize(spec, true)
 }
 
@@ -45,6 +52,22 @@ func newObjectsUserSample() *cloudscalev1.ObjectsUser {
 			SecretRef: "my-cloudscale-user-credentials",
 		},
 		Status: cloudscalev1.ObjectsUserStatus{},
+	}
+}
+
+func newBucketSample() *bucketv1.Bucket {
+	return &bucketv1.Bucket{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: bucketv1.BucketGroupVersionKind.GroupVersion().String(),
+			Kind:       bucketv1.BucketKind,
+		},
+		ObjectMeta: metav1.ObjectMeta{Name: "bucket", Namespace: "default"},
+		Spec: bucketv1.BucketSpec{
+			CredentialsSecretRef: "my-cloudscale-user-credentials",
+			EndpointURL:          "objects.rma.cloudscale.ch",
+			BucketName:           "my-appcat-test-bucket",
+			Region:               "rma",
+		},
 	}
 }
 
