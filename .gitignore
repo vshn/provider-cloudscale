@@ -4,7 +4,7 @@ dist/
 .github/crds.yaml
 
 # Build
-/service-s3
+/provider-cloudscale
 *.out
 
 # Docs

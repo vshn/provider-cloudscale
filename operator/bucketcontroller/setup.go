@@ -3,7 +3,7 @@ package bucketcontroller
 import (
 	"strings"
 
-	bucketv1 "github.com/vshn/appcat-service-s3/apis/bucket/v1"
+	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )

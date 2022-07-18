@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"time"
+
 	pipeline "github.com/ccremer/go-command-pipeline"
-	"github.com/vshn/appcat-service-s3/apis"
-	"github.com/vshn/appcat-service-s3/operator"
-	"github.com/vshn/appcat-service-s3/operator/cloudscale"
+	"github.com/vshn/provider-cloudscale/apis"
+	"github.com/vshn/provider-cloudscale/operator"
+	"github.com/vshn/provider-cloudscale/operator/cloudscale"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"time"
 
 	"github.com/urfave/cli/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -78,7 +79,7 @@ func (c *operatorCommand) execute(ctx *cli.Context) error {
 			//  hundreds of reconciles per second and ~200rps to the API server.
 			// Switching to Leases only and longer leases appears to alleviate this.
 			LeaderElection:             c.LeaderElectionEnabled,
-			LeaderElectionID:           "leader-election-appcat-service-s3",
+			LeaderElectionID:           "leader-election-provider-cloudscale",
 			LeaderElectionResourceLock: resourcelock.LeasesResourceLock,
 			LeaseDuration:              func() *time.Duration { d := 60 * time.Second; return &d }(),
 			RenewDeadline:              func() *time.Duration { d := 50 * time.Second; return &d }(),

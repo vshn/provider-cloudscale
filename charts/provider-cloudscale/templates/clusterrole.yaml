@@ -2,9 +2,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: '{{ include "appcat-service-s3.fullname" . }}-view'
+  name: '{{ include "provider-cloudscale.fullname" . }}-view'
   labels:
-    {{- include "appcat-service-s3.labels" . | nindent 4 }}
+    {{- include "provider-cloudscale.labels" . | nindent 4 }}
     rbac.authorization.k8s.io/aggregate-to-view: "true"
 rules:
   - apiGroups:
@@ -26,9 +26,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: '{{ include "appcat-service-s3.fullname" . }}-edit'
+  name: '{{ include "provider-cloudscale.fullname" . }}-edit'
   labels:
-    {{- include "appcat-service-s3.labels" . | nindent 4 }}
+    {{- include "provider-cloudscale.labels" . | nindent 4 }}
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
 rules:

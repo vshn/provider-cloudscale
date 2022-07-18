@@ -7,8 +7,8 @@ RUN \
     ca-certificates \
     tzdata
 
-ENTRYPOINT ["service-s3"]
+ENTRYPOINT ["provider-cloudscale"]
 CMD ["operator"]
-COPY service-s3 /usr/bin/
+COPY provider-cloudscale /usr/bin/
 
 USER 65536:0

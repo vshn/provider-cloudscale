@@ -1,4 +1,4 @@
-module github.com/vshn/appcat-service-s3
+module github.com/vshn/provider-cloudscale
 
 go 1.18
 

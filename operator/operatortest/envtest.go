@@ -2,11 +2,12 @@ package operatortest
 
 import (
 	"context"
-	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"

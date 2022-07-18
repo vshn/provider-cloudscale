@@ -3,7 +3,7 @@
 [discrete]
 == Introduction
 
-AppCat Service S3 is an operator that deploys S3 objects users and buckets on various cloud providers.
+Provider Cloudscale is an operator that deploys resources on cloudscale.ch using their SDK.
 
 [discrete]
 == Documentation

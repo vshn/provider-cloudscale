@@ -8,8 +8,8 @@ import (
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	bucketv1 "github.com/vshn/appcat-service-s3/apis/bucket/v1"
-	"github.com/vshn/appcat-service-s3/operator/steps"
+	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
+	"github.com/vshn/provider-cloudscale/operator/steps"
 	corev1 "k8s.io/api/core/v1"
 )
 

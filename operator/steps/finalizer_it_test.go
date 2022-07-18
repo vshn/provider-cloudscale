@@ -4,13 +4,14 @@ package steps
 
 import (
 	"context"
+	"testing"
+
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/stretchr/testify/suite"
-	"github.com/vshn/appcat-service-s3/operator/operatortest"
+	"github.com/vshn/provider-cloudscale/operator/operatortest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 type FinalizerSuite struct {

@@ -10,6 +10,6 @@
 ## Installation
 
 ```bash
-helm repo add appcat-service-s3 https://vshn.github.io/appcat-service-s3
-helm install {{ template "chart.name" . }} appcat-service-s3/{{ template "chart.name" . }}
+helm repo add provider-cloudscale https://vshn.github.io/provider-cloudscale
+helm install {{ template "chart.name" . }} provider-cloudscale/{{ template "chart.name" . }}
 ```

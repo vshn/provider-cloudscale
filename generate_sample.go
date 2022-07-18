@@ -10,17 +10,18 @@ package main
 
 import (
 	"fmt"
-	"github.com/vshn/appcat-service-s3/apis"
-	bucketv1 "github.com/vshn/appcat-service-s3/apis/bucket/v1"
-	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
 	"io"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	serializerjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/vshn/provider-cloudscale/apis"
+	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
+	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	serializerjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
 )
 
 var scheme = runtime.NewScheme()
@@ -65,7 +66,7 @@ func newBucketSample() *bucketv1.Bucket {
 		Spec: bucketv1.BucketSpec{
 			CredentialsSecretRef: "my-cloudscale-user-credentials",
 			EndpointURL:          "objects.rma.cloudscale.ch",
-			BucketName:           "my-appcat-test-bucket",
+			BucketName:           "my-provider-test-bucket",
 			Region:               "rma",
 		},
 	}

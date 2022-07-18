@@ -4,9 +4,9 @@ import (
 	"context"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
-	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
-	"github.com/vshn/appcat-service-s3/apis/conditions"
-	"github.com/vshn/appcat-service-s3/operator/steps"
+	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
+	"github.com/vshn/provider-cloudscale/apis/conditions"
+	"github.com/vshn/provider-cloudscale/operator/steps"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"

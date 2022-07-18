@@ -6,8 +6,8 @@ import (
 
 	pipeline "github.com/ccremer/go-command-pipeline"
 	cloudscalesdk "github.com/cloudscale-ch/cloudscale-go-sdk/v2"
-	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
-	"github.com/vshn/appcat-service-s3/operator/steps"
+	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
+	"github.com/vshn/provider-cloudscale/operator/steps"
 	"golang.org/x/oauth2"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 )
