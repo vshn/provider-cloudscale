@@ -1,19 +1,19 @@
-# appcat-service-3
+# provider-cloudscale
 
-[![Build](https://img.shields.io/github/workflow/status/vshn/appcat-service-s3/Test)][build]
-![Go version](https://img.shields.io/github/go-mod/go-version/vshn/appcat-service-s3)
-[![Version](https://img.shields.io/github/v/release/vshn/appcat-service-s3)][releases]
-[![Maintainability](https://img.shields.io/codeclimate/maintainability/vshn/appcat-service-s3)][codeclimate]
-[![Coverage](https://img.shields.io/codeclimate/coverage/vshn/appcat-service-s3)][codeclimate]
-[![GitHub downloads](https://img.shields.io/github/downloads/vshn/appcat-service-s3/total)][releases]
+[![Build](https://img.shields.io/github/workflow/status/vshn/provider-cloudscale/Test)][build]
+![Go version](https://img.shields.io/github/go-mod/go-version/vshn/provider-cloudscale)
+[![Version](https://img.shields.io/github/v/release/vshn/provider-cloudscale)][releases]
+[![Maintainability](https://img.shields.io/codeclimate/maintainability/vshn/provider-cloudscale)][codeclimate]
+[![Coverage](https://img.shields.io/codeclimate/coverage/vshn/provider-cloudscale)][codeclimate]
+[![GitHub downloads](https://img.shields.io/github/downloads/vshn/provider-cloudscale/total)][releases]
 
-[build]: https://github.com/vshn/appcat-service-s3/actions?query=workflow%3ATest
-[releases]: https://github.com/vshn/appcat-service-s3/releases
-[codeclimate]: https://codeclimate.com/github/vshn/appcat-service-s3
+[build]: https://github.com/vshn/provider-cloudscale/actions?query=workflow%3ATest
+[releases]: https://github.com/vshn/provider-cloudscale/releases
+[codeclimate]: https://codeclimate.com/github/vshn/provider-cloudscale
 
 VSHN opinionated operator to deploy S3 resources on supported cloud providers.
 
-https://vshn.github.io/appcat-service-s3/
+https://vshn.github.io/provider-cloudscale/
 
 ## Local Development
 

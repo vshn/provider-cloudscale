@@ -1,5 +1,5 @@
 * xref:index.adoc[Introduction]
-* https://github.com/vshn/appcat-service-s3/releases[Changelog,window=_blank] 🔗
+* https://github.com/vshn/provider-cloudscale/releases[Changelog,window=_blank] 🔗
 
 .Tutorials
 * xref:tutorials/installation.adoc[Installation]

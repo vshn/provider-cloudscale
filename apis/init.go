@@ -2,10 +2,10 @@
 package apis
 
 import (
-	bucketv1 "github.com/vshn/appcat-service-s3/apis/bucket/v1"
+	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
+	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 )
 
 // AddToSchemes may be used to add all resources defined in the project to a Scheme

@@ -6,7 +6,7 @@ on:
       - "[a-z]+-*" # match tags following the 'chart-name-x.y.z'
 
 jobs:
-  # Currently this job with changelog generator only works for the appcat-service-s3 chart...
+  # Currently this job with changelog generator only works for the provider-cloudscale chart...
   # More charts (e.g. forks) may need additional engineering to get the changelog right.
   gh-pages:
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
       - name: Get chart versions
         run: |
           echo "CHART_VERSION=$(yq e '.version' charts/${CHART_NAME}/Chart.yaml)" >> $GITHUB_ENV
-          echo "PREVIOUS_CHART_VERSION=$(git tag --sort=taggerdate --list "appcat-service-s3-*" | tail -n 2 | head -n 1 | rev | cut -d - -f 1 | rev)" >> $GITHUB_ENV        
+          echo "PREVIOUS_CHART_VERSION=$(git tag --sort=taggerdate --list "provider-cloudscale-*" | tail -n 2 | head -n 1 | rev | cut -d - -f 1 | rev)" >> $GITHUB_ENV        
 
       - name: Prepare changelog config
         run: .github/changelog-charts.sh ${CHART_NAME}

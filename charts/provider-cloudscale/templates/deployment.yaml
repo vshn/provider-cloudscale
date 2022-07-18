@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "appcat-service-s3.fullname" . }}
+  name: {{ include "provider-cloudscale.fullname" . }}
   labels:
-    {{- include "appcat-service-s3.labels" . | nindent 4 }}
+    {{- include "provider-cloudscale.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "appcat-service-s3.selectorLabels" . | nindent 6 }}
+      {{- include "provider-cloudscale.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -16,13 +16,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "appcat-service-s3.selectorLabels" . | nindent 8 }}
+        {{- include "provider-cloudscale.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "appcat-service-s3.serviceAccountName" . }}
+      serviceAccountName: {{ include "provider-cloudscale.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -43,7 +43,7 @@ spec:
                 {{ if .Values.tokens.externalSecretName -}}
                 name: {{ .Values.tokens.externalSecretName }}
                 {{- else -}}
-                name: {{ include "appcat-service-s3.fullname" . }}
+                name: {{ include "provider-cloudscale.fullname" . }}
                 {{- end }}
           ports:
             - name: metrics

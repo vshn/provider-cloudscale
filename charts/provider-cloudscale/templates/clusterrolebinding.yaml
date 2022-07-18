@@ -2,15 +2,15 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "appcat-service-s3.fullname" . }}
+  name: {{ include "provider-cloudscale.fullname" . }}
   labels:
-    {{- include "appcat-service-s3.labels" . | nindent 4 }}
+    {{- include "provider-cloudscale.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: {{ include "appcat-service-s3.fullname" . }}-manager
+  name: {{ include "provider-cloudscale.fullname" . }}-manager
 subjects:
 - kind: ServiceAccount
-  name: {{ include "appcat-service-s3.serviceAccountName" . }}
+  name: {{ include "provider-cloudscale.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
 {{- end }}

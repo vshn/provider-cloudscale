@@ -14,8 +14,8 @@ $(setup_envtest_bin):
 local-install: export KUBECONFIG = $(KIND_KUBECONFIG)
 local-install: kind-load-image install-crd ## Install Operator in local cluster
 	yq -n e '.tokens.cloudscale=strenv(CLOUDSCALE_API_TOKEN)' > $(kind_dir)/.credentials.yaml
-	helm upgrade --install appcat-service-s3 charts/appcat-service-s3 \
-		--create-namespace --namespace appcat-service-s3-system \
+	helm upgrade --install provider-cloudscale charts/provider-cloudscale \
+		--create-namespace --namespace provider-cloudscale-system \
 		--set "operator.args[0]=--log-level=2" \
 		--set "operator.args[1]=operator" \
 		--set podAnnotations.date="$(shell date)" \

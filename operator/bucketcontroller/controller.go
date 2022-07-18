@@ -5,8 +5,8 @@ import (
 
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/go-logr/logr"
-	bucketv1 "github.com/vshn/appcat-service-s3/apis/bucket/v1"
-	"github.com/vshn/appcat-service-s3/operator/steps"
+	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
+	"github.com/vshn/provider-cloudscale/operator/steps"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"

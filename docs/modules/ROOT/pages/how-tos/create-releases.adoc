@@ -44,7 +44,7 @@ Once the operator is released, consider creating another PR that updates the Hel
 
 == Helm Chart Release
 
-Releasing a new version of a Helm chart requires pushing a **new Git tag**, following the SemVer schema with a **chart name prefix**, for example `appcat-service-s3-1.2.3`.
+Releasing a new version of a Helm chart requires pushing a **new Git tag**, following the SemVer schema with a **chart name prefix**, for example `provider-cloudscale-1.2.3`.
 It's recommended to create a PR for each Helm chart change separately.
 After merging a PR for a Helm chart it's _not_ required to immediately release it.
 
@@ -55,7 +55,7 @@ The chart README _must_ be generated using `make chart-docs` to ensure that the 
 .Possible Helm chart Git tags
 [example]
 ====
-- `appcat-service-s3-1.2.3`
+- `provider-cloudscale-1.2.3`
 ====
 
 The changelog will be automatically created and is based on merged PRs.
@@ -63,7 +63,7 @@ PRs that affect code changes are excluded.
 The following labels must exist on a PR to be included in the changelog:
 
 - `area:chart`
-- `chart:appcat-service-s3`
+- `chart:provider-cloudscale`
 - one of [`bug`, `enhancement`, `documentation`, `change`, `breaking`, `dependency`]
 
 If the Helm chart updates the image tag for the operator, it's recommended to set a title like `Update image tag to vx.y.z` or similar and set the `dependency` label.

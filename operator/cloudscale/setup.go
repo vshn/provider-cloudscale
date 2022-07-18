@@ -1,10 +1,11 @@
 package cloudscale
 
 import (
-	cloudscalev1 "github.com/vshn/appcat-service-s3/apis/cloudscale/v1"
+	"strings"
+
+	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"strings"
 )
 
 // SetupController adds a controller that reconciles cloudscalev1.ObjectsUser managed resources.

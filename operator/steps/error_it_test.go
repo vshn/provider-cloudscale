@@ -7,9 +7,9 @@ import (
 
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/stretchr/testify/suite"
-	bucketv1 "github.com/vshn/appcat-service-s3/apis/bucket/v1"
-	"github.com/vshn/appcat-service-s3/apis/conditions"
-	"github.com/vshn/appcat-service-s3/operator/operatortest"
+	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
+	"github.com/vshn/provider-cloudscale/apis/conditions"
+	"github.com/vshn/provider-cloudscale/operator/operatortest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"

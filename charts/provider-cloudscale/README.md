@@ -1,4 +1,4 @@
-# appcat-service-s3
+# provider-cloudscale
 
 ![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
@@ -7,21 +7,18 @@ VSHN-opinionated S3 operator for AppCat
 ## Installation
 
 ```bash
-helm repo add appcat-service-s3 https://vshn.github.io/appcat-service-s3
-helm install appcat-service-s3 appcat-service-s3/appcat-service-s3
+helm repo add provider-cloudscale https://vshn.github.io/provider-cloudscale
+helm install provider-cloudscale provider-cloudscale/provider-cloudscale
+```
+```bash
+kubectl apply -f https://github.com/vshn/provider-cloudscale/releases/download/provider-cloudscale-0.1.1/crds.yaml
 ```
 
 <!---
-Common/Useful Link references from values.yaml
+The values below are generated with helm-docs!
+
+Document your changes in values.yaml and let `make chart-docs` generate this section.
 -->
-[resource-units]: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes
-[prometheus-operator]: https://github.com/coreos/prometheus-operator
-# appcat-service-s3
-
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
-
-VSHN-opinionated S3 operator for AppCat
-
 ## Values
 
 | Key | Type | Default | Description |
@@ -30,7 +27,7 @@ VSHN-opinionated S3 operator for AppCat
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` | Operator image pull policy If set to empty, then Kubernetes default behaviour applies. |
 | image.registry | string | `"ghcr.io"` | Operator image registry |
-| image.repository | string | `"vshn/appcat-service-s3"` | Operator image repository |
+| image.repository | string | `"vshn/provider-cloudscale"` | Operator image repository |
 | image.tag | string | `"latest"` | Operator image tag |
 | imagePullSecrets | list | `[]` | List of image pull secrets if custom image is behind authentication. |
 | nameOverride | string | `""` |  |
@@ -51,3 +48,8 @@ VSHN-opinionated S3 operator for AppCat
 | tokens.externalSecretName | string | `""` | Name of the external secret if tokens are not managed by this chart.   See `templates/secret.yaml` to figure out how to setup the expected environment variables. |
 | tolerations | list | `[]` |  |
 
+<!---
+Common/Useful Link references from values.yaml
+-->
+[resource-units]: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes
+[prometheus-operator]: https://github.com/coreos/prometheus-operator

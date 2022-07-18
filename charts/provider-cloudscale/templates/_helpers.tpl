@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "appcat-service-s3.name" -}}
+{{- define "provider-cloudscale.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "appcat-service-s3.fullname" -}}
+{{- define "provider-cloudscale.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "appcat-service-s3.chart" -}}
+{{- define "provider-cloudscale.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "appcat-service-s3.labels" -}}
-helm.sh/chart: {{ include "appcat-service-s3.chart" . }}
-{{ include "appcat-service-s3.selectorLabels" . }}
+{{- define "provider-cloudscale.labels" -}}
+helm.sh/chart: {{ include "provider-cloudscale.chart" . }}
+{{ include "provider-cloudscale.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "appcat-service-s3.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "appcat-service-s3.name" . }}
+{{- define "provider-cloudscale.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "provider-cloudscale.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "appcat-service-s3.serviceAccountName" -}}
+{{- define "provider-cloudscale.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "appcat-service-s3.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "provider-cloudscale.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

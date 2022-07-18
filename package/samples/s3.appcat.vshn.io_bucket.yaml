@@ -5,7 +5,7 @@ metadata:
   name: bucket
   namespace: default
 spec:
-  bucketName: my-appcat-test-bucket
+  bucketName: my-provider-test-bucket
   credentialsSecretRef: my-cloudscale-user-credentials
   endpointURL: objects.rma.cloudscale.ch
   region: rma

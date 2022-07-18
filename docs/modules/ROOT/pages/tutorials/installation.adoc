@@ -11,20 +11,20 @@ This tutorial goes through the steps required to get the operator up and running
 
 == Steps
 
-. Install chart `appcat-service-s3`
+. Install chart `provider-cloudscale`
 +
 [source,bash,subs="attributes+"]
 ----
-helm repo add appcat-service-s3 https://vshn.github.io/appcat-service-s3
+helm repo add provider-cloudscale https://vshn.github.io/provider-cloudscale
 ifeval::["{releaseVersion}" == "latest"]
-kubectl apply -f https://github.com/vshn/appcat-service-s3/releases/latest/download/crds.yaml
+kubectl apply -f https://github.com/vshn/provider-cloudscale/releases/latest/download/crds.yaml
 endif::[]
 ifeval::["{releaseVersion}" != "latest"]
-kubectl apply -f https://github.com/vshn/appcat-service-s3/releases/download/{releaseVersion}/crds.yaml
+kubectl apply -f https://github.com/vshn/provider-cloudscale/releases/download/{releaseVersion}/crds.yaml
 endif::[]
-helm upgrade --install provider-s3 appcat-service-s3/appcat-service-s3 \
+helm upgrade --install provider-s3 provider-cloudscale/provider-cloudscale \
   --create-namespace \
-  --namespace appcat-service-s3-system \
+  --namespace provider-cloudscale-system \
   --wait
 ----
 

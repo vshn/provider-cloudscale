@@ -4,7 +4,7 @@ import (
 	"context"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
-	"github.com/vshn/appcat-service-s3/apis/conditions"
+	"github.com/vshn/provider-cloudscale/apis/conditions"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	controllerruntime "sigs.k8s.io/controller-runtime"

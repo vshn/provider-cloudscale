@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "appcat-service-s3.fullname" . }}
+  name: {{ include "provider-cloudscale.fullname" . }}
   labels:
-    {{- include "appcat-service-s3.labels" . | nindent 4 }}
+    {{- include "provider-cloudscale.labels" . | nindent 4 }}
   {{- with .Values.service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -16,4 +16,4 @@ spec:
       protocol: TCP
       name: metrics
   selector:
-    {{- include "appcat-service-s3.selectorLabels" . | nindent 4 }}
+    {{- include "provider-cloudscale.selectorLabels" . | nindent 4 }}

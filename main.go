@@ -19,8 +19,8 @@ var (
 	commit  = "-dirty-"
 	date    = time.Now().Format("2006-01-02")
 
-	appName     = "appcat-service-s3"
-	appLongName = "operator that deploys S3 resources on various cloud providers"
+	appName     = "provider-cloudscale"
+	appLongName = "Crossplane provider that deploys resources on cloudscale.ch"
 
 	envPrefix = ""
 )

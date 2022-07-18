@@ -9,9 +9,9 @@ endif
 
 $(rbac_gen_tgt):
 	@cp $(rbac_gen_src) $@
-	@yq -i e '.metadata.name="{{ include \"appcat-service-s3.fullname\" . }}-manager", del(.metadata.creationTimestamp)' $@
+	@yq -i e '.metadata.name="{{ include \"provider-cloudscale.fullname\" . }}-manager", del(.metadata.creationTimestamp)' $@
 	@yq -i e '.metadata.labels.replace="LABELS"' $@
-	@$(sed) -e 's/replace: LABELS/{{- include "appcat-service-s3.labels" . | nindent 4 }}/g' $@
+	@$(sed) -e 's/replace: LABELS/{{- include "provider-cloudscale.labels" . | nindent 4 }}/g' $@
 
 .PHONY: prepare
 prepare: $(rbac_gen_tgt) ## Helmify generated artifacts

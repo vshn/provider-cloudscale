@@ -1,8 +1,8 @@
 package operator
 
 import (
-	"github.com/vshn/appcat-service-s3/operator/bucketcontroller"
-	"github.com/vshn/appcat-service-s3/operator/cloudscale"
+	"github.com/vshn/provider-cloudscale/operator/bucketcontroller"
+	"github.com/vshn/provider-cloudscale/operator/cloudscale"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 

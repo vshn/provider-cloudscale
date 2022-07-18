@@ -1,8 +1,7 @@
 site:
-  # TODO: Adjust project meta
-  title: AppCat Service S3
-  start_page: appcat-service-s3::index.adoc
-  url: https://vshn.github.io/appcat-service-s3
+  title: Cloudscale Provider for Crossplane
+  start_page: provider-cloudscale::index.adoc
+  url: https://vshn.github.io/provider-cloudscale
 content:
   sources:
     - url: ../antora

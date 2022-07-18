@@ -3,7 +3,7 @@ package steps
 import (
 	"context"
 
-	"github.com/vshn/appcat-service-s3/apis/conditions"
+	"github.com/vshn/provider-cloudscale/apis/conditions"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )

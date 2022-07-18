@@ -2,9 +2,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: '{{ include "appcat-service-s3.fullname" . }}-manager'
+  name: '{{ include "provider-cloudscale.fullname" . }}-manager'
   labels:
-    {{- include "appcat-service-s3.labels" . | nindent 4 }}
+    {{- include "provider-cloudscale.labels" . | nindent 4 }}
 rules:
   - apiGroups:
       - cloudscale.s3.appcat.vshn.io

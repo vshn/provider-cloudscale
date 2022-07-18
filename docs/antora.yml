@@ -1,11 +1,10 @@
 # TODO: Adjust project meta
-name: appcat-service-s3
-title: AppCat Service S3
+name: provider-cloudscale
+title: Cloudscale Provider for Crossplane
 version: master
 start_page: ROOT:index.adoc
 nav:
   - modules/ROOT/nav.adoc
 asciidoc:
   attributes:
-    appcat: AppCat
     releaseVersion: latest

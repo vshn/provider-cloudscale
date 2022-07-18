@@ -2,11 +2,11 @@
 
 PROJECT_ROOT_DIR = .
 # TODO: Adjust project meta
-PROJECT_NAME ?= appcat-service-s3
+PROJECT_NAME ?= provider-cloudscale
 PROJECT_OWNER ?= vshn
 
 ## BUILD:go
-BIN_FILENAME ?= service-s3
+BIN_FILENAME ?= provider-cloudscale
 
 ## BUILD:docker
 DOCKER_CMD ?= docker

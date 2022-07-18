@@ -7,7 +7,7 @@ import (
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	bucketv1 "github.com/vshn/appcat-service-s3/apis/bucket/v1"
+	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
