@@ -1,6 +1,8 @@
 package conditions
 
 import (
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -20,30 +22,30 @@ const (
 )
 
 // Ready creates a condition with TypeReady, ReasonAvailable and empty message.
-func Ready() metav1.Condition {
-	return metav1.Condition{
+func Ready() xpv1.Condition {
+	return xpv1.Condition{
 		Type:               TypeReady,
-		Status:             metav1.ConditionTrue,
+		Status:             corev1.ConditionTrue,
 		LastTransitionTime: metav1.Now(),
 		Reason:             ReasonAvailable,
 	}
 }
 
 // NotReady creates a condition with TypeReady, ReasonAvailable and empty message.
-func NotReady() metav1.Condition {
-	return metav1.Condition{
+func NotReady() xpv1.Condition {
+	return xpv1.Condition{
 		Type:               TypeReady,
-		Status:             metav1.ConditionFalse,
+		Status:             corev1.ConditionFalse,
 		LastTransitionTime: metav1.Now(),
 		Reason:             ReasonAvailable,
 	}
 }
 
 // Failed creates a condition with TypeFailed, ReasonProvisioningFailed and the error message.
-func Failed(err error) metav1.Condition {
-	return metav1.Condition{
+func Failed(err error) xpv1.Condition {
+	return xpv1.Condition{
 		Type:               TypeFailed,
-		Status:             metav1.ConditionTrue,
+		Status:             corev1.ConditionTrue,
 		LastTransitionTime: metav1.Now(),
 		Reason:             ReasonProvisioningFailed,
 		Message:            err.Error(),
@@ -54,7 +56,7 @@ func Failed(err error) metav1.Condition {
 type ObjectWithConditions interface {
 	client.Object
 	// GetConditions returns the currently active conditions.
-	GetConditions() []metav1.Condition
+	GetConditions() []xpv1.Condition
 	// SetConditions sets the active conditions to the given conditions.
-	SetConditions(v []metav1.Condition)
+	SetConditions(v []xpv1.Condition)
 }

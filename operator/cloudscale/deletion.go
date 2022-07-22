@@ -2,6 +2,7 @@ package cloudscale
 
 import (
 	"context"
+	"fmt"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
 	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
@@ -47,7 +48,9 @@ func deleteFinalizerFromSecret(ctx context.Context) error {
 	log := controllerruntime.LoggerFrom(ctx)
 
 	secret := &corev1.Secret{}
-	err := kube.Get(ctx, types.NamespacedName{Name: user.Spec.SecretRef, Namespace: user.Namespace}, secret)
+	name := user.Spec.ForProvider.SecretRef.Name
+	namespace := user.Spec.ForProvider.SecretRef.Namespace
+	err := kube.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, secret)
 	if apierrors.IsNotFound(err) {
 		return nil // doesn't exist anymore, ignore
 	}
@@ -55,7 +58,7 @@ func deleteFinalizerFromSecret(ctx context.Context) error {
 		return err // some other error
 	}
 	err = steps.RemoveFinalizerFn(ObjectsUserKey{}, userFinalizer)(ctx)
-	return logIfNotError(err, log, 1, "Deleted finalizer from credentials secret", "secretName", user.Spec.SecretRef)
+	return logIfNotError(err, log, 1, "Deleted finalizer from credentials secret", "secretName", fmt.Sprintf("%s/%s", namespace, name))
 }
 
 func emitDeletionEvent(ctx context.Context) error {

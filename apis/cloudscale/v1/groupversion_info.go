@@ -1,8 +1,8 @@
 // +kubebuilder:object:generate=true
-// +groupName=cloudscale.s3.appcat.vshn.io
+// +groupName=cloudscale.crossplane.io
 // +versionName=v1
 
-// Package v1 contains the v1 group cloudscale.s3.appcat.vshn.io resources of the S3 provider.
+// Package v1 contains the v1 group cloudscale.crossplane.io resources of provider-cloudscale.
 package v1
 
 import (
@@ -12,7 +12,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "cloudscale.s3.appcat.vshn.io"
+	Group   = "cloudscale.crossplane.io"
 	Version = "v1"
 )
 

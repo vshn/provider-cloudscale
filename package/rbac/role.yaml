@@ -6,7 +6,28 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - cloudscale.s3.appcat.vshn.io
+  - cloudscale.crossplane.io
+  resources:
+  - buckets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cloudscale.crossplane.io
+  resources:
+  - buckets/finalizers
+  - buckets/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - cloudscale.crossplane.io
   resources:
   - objectsusers
   verbs:
@@ -18,10 +39,52 @@ rules:
   - update
   - watch
 - apiGroups:
-  - cloudscale.s3.appcat.vshn.io
+  - cloudscale.crossplane.io
   resources:
   - objectsusers/finalizers
   - objectsusers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - cloudscale.crossplane.io
+  resources:
+  - providerconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cloudscale.crossplane.io
+  resources:
+  - providerconfigs/finalizers
+  - providerconfigs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - cloudscale.crossplane.io
+  resources:
+  - providerconfigusages
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cloudscale.crossplane.io
+  resources:
+  - providerconfigusages/finalizers
+  - providerconfigusages/status
   verbs:
   - get
   - patch
@@ -53,24 +116,3 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - s3.appcat.vshn.io
-  resources:
-  - buckets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - s3.appcat.vshn.io
-  resources:
-  - buckets/finalizers
-  - buckets/status
-  verbs:
-  - get
-  - patch
-  - update

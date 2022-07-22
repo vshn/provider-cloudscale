@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/vshn/provider-cloudscale/apis/conditions"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -29,8 +28,8 @@ func MarkObjectReadyFn(objKey any) func(ctx context.Context) error {
 
 		conds := obj.GetConditions()
 
-		meta.SetStatusCondition(&conds, conditions.Ready())
-		meta.RemoveStatusCondition(&conds, conditions.TypeFailed)
+		//meta.SetStatusCondition(&conds, conditions.Ready())
+		//meta.RemoveStatusCondition(&conds, conditions.TypeFailed)
 		obj.SetConditions(conds)
 		return kube.Status().Update(ctx, obj)
 	}

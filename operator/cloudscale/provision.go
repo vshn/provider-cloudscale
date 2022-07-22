@@ -7,7 +7,6 @@ import (
 
 	pipeline "github.com/ccremer/go-command-pipeline"
 	cloudscalesdk "github.com/cloudscale-ch/cloudscale-go-sdk/v2"
-	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
 	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 	"github.com/vshn/provider-cloudscale/apis/conditions"
 	"github.com/vshn/provider-cloudscale/operator/steps"
@@ -51,7 +50,7 @@ func (p *ProvisioningPipeline) Run(ctx context.Context) error {
 
 func isObjectsUserIDKnown(ctx context.Context) bool {
 	user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
-	return user.Status.UserID != ""
+	return user.Status.AtProvider.UserID != ""
 }
 
 func emitCreationEvent(ctx context.Context) error {
@@ -71,7 +70,9 @@ func ensureCredentialSecret(ctx context.Context) error {
 	csUser := steps.GetFromContextOrPanic(ctx, CloudscaleUserKey{}).(*cloudscalesdk.ObjectsUser)
 	log := controllerruntime.LoggerFrom(ctx)
 
-	secret := &corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: user.Spec.SecretRef, Namespace: user.Namespace}}
+	name := user.Spec.ForProvider.SecretRef.Name
+	namespace := user.Spec.ForProvider.SecretRef.Namespace
+	secret := &corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace}}
 
 	if keyErr := checkUserForKeys(csUser); keyErr != nil {
 		return keyErr
@@ -84,14 +85,14 @@ func ensureCredentialSecret(ctx context.Context) error {
 		if secret.StringData == nil {
 			secret.StringData = map[string]string{}
 		}
-		secret.StringData[bucketv1.AccessKeyIDName] = csUser.Keys[0]["access_key"]
-		secret.StringData[bucketv1.SecretAccessKeyName] = csUser.Keys[0]["secret_key"]
+		secret.StringData[cloudscalev1.AccessKeyIDName] = csUser.Keys[0]["access_key"]
+		secret.StringData[cloudscalev1.SecretAccessKeyName] = csUser.Keys[0]["secret_key"]
 		controllerutil.AddFinalizer(secret, userFinalizer)
 		return controllerutil.SetOwnerReference(user, secret, kube.Scheme())
 	})
 
 	pipeline.StoreInContext(ctx, UserCredentialSecretKey{}, secret)
-	return logIfNotError(err, log, 1, "Ensured credential secret", "secretName", user.Spec.SecretRef)
+	return logIfNotError(err, log, 1, "Ensured credential secret", "secretName", fmt.Sprintf("%s/%s", namespace, name))
 }
 
 func getCommonLabels(instanceName string) labels.Set {

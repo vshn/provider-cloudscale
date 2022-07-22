@@ -4,7 +4,7 @@ import (
 	"context"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
-	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
+	bucketv1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 	"github.com/vshn/provider-cloudscale/apis/conditions"
 	"github.com/vshn/provider-cloudscale/operator/steps"
 	corev1 "k8s.io/api/core/v1"
@@ -40,7 +40,7 @@ func (p *DeletionPipeline) Run(ctx context.Context) error {
 func bucketExisting(ctx context.Context) bool {
 	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*bucketv1.Bucket)
 
-	return bucket.Status.BucketName != ""
+	return bucket.Status.AtProvider.BucketName != ""
 }
 
 func emitDeletionEvent(ctx context.Context) error {

@@ -4,9 +4,9 @@ import (
 	"context"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/vshn/provider-cloudscale/apis/conditions"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
@@ -28,10 +28,10 @@ func ErrorHandlerFn(objKey any, reason string) pipeline.ResultHandler {
 
 		conds := obj.GetConditions()
 		failedCond := conditions.Failed(result.Err())
-		failedCond.Reason = reason
+		failedCond.Reason = xpv1.ConditionReason(reason)
 
-		meta.SetStatusCondition(&conds, conditions.NotReady())
-		meta.SetStatusCondition(&conds, failedCond)
+		// meta.SetStatusCondition(&conds, conditions.NotReady())
+		// meta.SetStatusCondition(&conds, failedCond)
 		obj.SetConditions(conds)
 		err := kube.Status().Update(ctx, obj)
 		if err != nil {

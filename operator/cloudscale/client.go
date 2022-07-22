@@ -42,7 +42,7 @@ func CreateObjectsUser(ctx context.Context) error {
 	csUser, err := csClient.ObjectsUsers.Create(ctx, &cloudscalesdk.ObjectsUserRequest{
 		DisplayName: displayName,
 	})
-	user.Status.UserID = csUser.ID
+	user.Status.AtProvider.UserID = csUser.ID
 
 	pipeline.StoreInContext(ctx, CloudscaleUserKey{}, csUser)
 	return logIfNotError(err, log, 1, "Created objects user in cloudscale", "userID", csUser.ID)
@@ -54,7 +54,7 @@ func GetObjectsUser(ctx context.Context) error {
 	user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
 	log := controllerruntime.LoggerFrom(ctx)
 
-	csUser, err := csClient.ObjectsUsers.Get(ctx, user.Status.UserID)
+	csUser, err := csClient.ObjectsUsers.Get(ctx, user.Status.AtProvider.UserID)
 
 	pipeline.StoreInContext(ctx, CloudscaleUserKey{}, csUser)
 	return logIfNotError(err, log, 1, "Fetched objects user in cloudscale")
@@ -66,8 +66,8 @@ func DeleteObjectsUser(ctx context.Context) error {
 	user := steps.GetFromContextOrPanic(ctx, ObjectsUserKey{}).(*cloudscalev1.ObjectsUser)
 	log := controllerruntime.LoggerFrom(ctx)
 
-	err := csClient.ObjectsUsers.Delete(ctx, user.Status.UserID)
-	return logIfNotError(err, log, 1, "Deleted objects user in cloudscale", "userID", user.Status.UserID)
+	err := csClient.ObjectsUsers.Delete(ctx, user.Status.AtProvider.UserID)
+	return logIfNotError(err, log, 1, "Deleted objects user in cloudscale", "userID", user.Status.AtProvider.UserID)
 }
 
 func checkUserForKeys(user *cloudscalesdk.ObjectsUser) error {

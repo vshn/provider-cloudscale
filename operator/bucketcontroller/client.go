@@ -8,7 +8,7 @@ import (
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
+	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 	"github.com/vshn/provider-cloudscale/operator/steps"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -18,17 +18,17 @@ type S3ClientKey struct{}
 
 // CreateS3Client creates a new client using the S3 credentials from the Secret.
 func CreateS3Client(ctx context.Context) error {
-	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*bucketv1.Bucket)
+	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*cloudscalev1.Bucket)
 	secret := steps.GetFromContextOrPanic(ctx, CredentialsSecretKey{}).(*corev1.Secret)
 
-	parsed, err := url.Parse(bucket.Spec.EndpointURL)
+	parsed, err := url.Parse(bucket.Spec.ForProvider.EndpointURL)
 	if err != nil {
 		return err
 	}
 
 	// we assume here that the secret has the expected keys and data.
-	accessKey := string(secret.Data[bucketv1.AccessKeyIDName])
-	secretKey := string(secret.Data[bucketv1.SecretAccessKeyName])
+	accessKey := string(secret.Data[cloudscalev1.AccessKeyIDName])
+	secretKey := string(secret.Data[cloudscalev1.SecretAccessKeyName])
 
 	host := parsed.Host
 	if parsed.Host == "" {
@@ -52,23 +52,23 @@ func isTLSEnabled(u *url.URL) bool {
 // If the bucket exists, but we don't own it, an error is returned.
 func CreateS3Bucket(ctx context.Context) error {
 	s3Client := steps.GetFromContextOrPanic(ctx, S3ClientKey{}).(*minio.Client)
-	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*bucketv1.Bucket)
+	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*cloudscalev1.Bucket)
 
 	bucketName := bucket.GetBucketName()
-	err := s3Client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: bucket.Spec.Region})
+	err := s3Client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: bucket.Spec.ForProvider.Region})
 
 	if err != nil {
 		// Check to see if we already own this bucket (which happens if we run this twice)
 		exists, errBucketExists := s3Client.BucketExists(ctx, bucketName)
 		if errBucketExists == nil && exists {
-			bucket.Status.BucketName = bucketName
+			bucket.Status.AtProvider.BucketName = bucketName
 			return nil
 		} else {
 			// someone else might have created the bucket
 			return err
 		}
 	}
-	bucket.Status.BucketName = bucketName
+	bucket.Status.AtProvider.BucketName = bucketName
 	return nil
 }
 
@@ -77,9 +77,9 @@ func CreateS3Bucket(ctx context.Context) error {
 // This func does not recursively delete all objects beforehand.
 func DeleteS3Bucket(ctx context.Context) error {
 	s3Client := steps.GetFromContextOrPanic(ctx, S3ClientKey{}).(*minio.Client)
-	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*bucketv1.Bucket)
+	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*cloudscalev1.Bucket)
 
-	bucketName := bucket.Status.BucketName
+	bucketName := bucket.Status.AtProvider.BucketName
 	err := s3Client.RemoveBucket(ctx, bucketName)
 	return err
 }

@@ -7,7 +7,7 @@ import (
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
+	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -44,10 +44,10 @@ func Test_preventBucketRename(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := pipeline.MutableContext(context.Background())
 
-			bucket := &bucketv1.Bucket{
+			bucket := &cloudscalev1.Bucket{
 				ObjectMeta: metav1.ObjectMeta{Name: "bucket"},
-				Spec:       bucketv1.BucketSpec{BucketName: tc.givenNameInSpec},
-				Status:     bucketv1.BucketStatus{BucketName: tc.givenNameInStatus},
+				Spec:       cloudscalev1.BucketSpec{ForProvider: cloudscalev1.BucketParameters{BucketName: tc.givenNameInSpec}},
+				Status:     cloudscalev1.BucketStatus{AtProvider: cloudscalev1.BucketObservation{BucketName: tc.givenNameInStatus}},
 			}
 			pipeline.StoreInContext(ctx, BucketKey{}, bucket)
 
@@ -68,33 +68,33 @@ func Test_validateSecret(t *testing.T) {
 	}{
 		"GivenExpectedKeys_ThenExpectNil": {
 			givenSecretData: map[string][]byte{
-				bucketv1.AccessKeyIDName:     []byte("a"),
-				bucketv1.SecretAccessKeyName: []byte("s"),
+				cloudscalev1.AccessKeyIDName:     []byte("a"),
+				cloudscalev1.SecretAccessKeyName: []byte("s"),
 			},
 		},
 		"GivenMissingAccessKey_ThenExpectError": {
 			givenSecretData: map[string][]byte{
-				bucketv1.SecretAccessKeyName: []byte("s"),
+				cloudscalev1.SecretAccessKeyName: []byte("s"),
 			},
 			expectedError: `secret "secret" is missing on of the following keys or content: [AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY]`,
 		},
 		"GivenMissingSecretKey_ThenExpectError": {
 			givenSecretData: map[string][]byte{
-				bucketv1.AccessKeyIDName: []byte("a"),
+				cloudscalev1.AccessKeyIDName: []byte("a"),
 			},
 			expectedError: `secret "secret" is missing on of the following keys or content: [AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY]`,
 		},
 		"GivenEmptyAccessKey_ThenExpectError": {
 			givenSecretData: map[string][]byte{
-				bucketv1.AccessKeyIDName:     []byte(""),
-				bucketv1.SecretAccessKeyName: []byte("s"),
+				cloudscalev1.AccessKeyIDName:     []byte(""),
+				cloudscalev1.SecretAccessKeyName: []byte("s"),
 			},
 			expectedError: `secret "secret" is missing on of the following keys or content: [AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY]`,
 		},
 		"GivenEmptySecretKey_ThenExpectError": {
 			givenSecretData: map[string][]byte{
-				bucketv1.SecretAccessKeyName: []byte(""),
-				bucketv1.AccessKeyIDName:     []byte("a"),
+				cloudscalev1.SecretAccessKeyName: []byte(""),
+				cloudscalev1.AccessKeyIDName:     []byte("a"),
 			},
 			expectedError: `secret "secret" is missing on of the following keys or content: [AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY]`,
 		},

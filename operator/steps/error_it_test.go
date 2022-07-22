@@ -8,6 +8,7 @@ import (
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/stretchr/testify/suite"
 	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
+	"github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 	"github.com/vshn/provider-cloudscale/apis/conditions"
 	"github.com/vshn/provider-cloudscale/operator/operatortest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,9 +34,9 @@ func (ts *ErrorSuite) Test_ErrorHandler() {
 	// Arrange
 	type objKey struct{}
 
-	obj := &bucketv1.Bucket{ // need an object that implements conditions.ObjectWithConditions.
+	obj := &v1.Bucket{ // need an object that implements conditions.ObjectWithConditions.
 		ObjectMeta: metav1.ObjectMeta{Name: "obj", Namespace: "namespace"},
-		Spec:       bucketv1.BucketSpec{CredentialsSecretRef: "irrelevant-but-required"}}
+		Spec:       v1.BucketSpec{CredentialsSecretRef: "irrelevant-but-required"}}
 	pipeline.StoreInContext(ts.Context, objKey{}, obj)
 	ts.EnsureNS(obj.Namespace)
 	ts.EnsureResources(obj)
@@ -55,7 +56,7 @@ func (ts *ErrorSuite) Test_ErrorHandler() {
 		RunWithContext(ts.Context)
 
 	// Assert
-	updatedObj := &bucketv1.Bucket{}
+	updatedObj := &v1.Bucket{}
 	ts.FetchResource(client.ObjectKeyFromObject(obj), updatedObj)
 	ts.Assert().EqualError(result.Err(), `step "create error" failed: error`, "error returned")
 	ts.Require().Len(obj.Status.Conditions, 2, "amount of conditions")

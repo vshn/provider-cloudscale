@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
-	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
+	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 	"github.com/vshn/provider-cloudscale/apis/conditions"
 	"github.com/vshn/provider-cloudscale/operator/steps"
 	corev1 "k8s.io/api/core/v1"
@@ -50,34 +50,36 @@ func (p *ProvisioningPipeline) Run(ctx context.Context) error {
 }
 
 func bucketNotExisting(ctx context.Context) bool {
-	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*bucketv1.Bucket)
+	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*cloudscalev1.Bucket)
 
-	return bucket.Status.BucketName == ""
+	return bucket.Status.AtProvider.BucketName == ""
 }
 
 func preventBucketRename(ctx context.Context) error {
-	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*bucketv1.Bucket)
+	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*cloudscalev1.Bucket)
 
-	if bucket.Status.BucketName == "" {
+	if bucket.Status.AtProvider.BucketName == "" {
 		// we don't know the previous bucket name
 		return nil
 	}
-	if bucket.Status.BucketName != bucket.GetBucketName() {
+	if bucket.Status.AtProvider.BucketName != bucket.GetBucketName() {
 		return fmt.Errorf("a bucket named %q has been previously created, you cannot rename it. Either revert 'spec.bucketName' back to %q or delete the bucket and recreate using a new name",
-			bucket.Status.BucketName, bucket.Status.BucketName)
+			bucket.Status.AtProvider.BucketName, bucket.Status.AtProvider.BucketName)
 	}
 	return nil
 }
 
 func fetchCredentialsSecret(ctx context.Context) error {
 	kube := steps.GetClientFromContext(ctx)
-	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*bucketv1.Bucket)
+	bucket := steps.GetFromContextOrPanic(ctx, BucketKey{}).(*cloudscalev1.Bucket)
 	log := controllerruntime.LoggerFrom(ctx)
 
 	secret := &corev1.Secret{}
-	err := kube.Get(ctx, types.NamespacedName{Name: bucket.Spec.CredentialsSecretRef, Namespace: bucket.Namespace}, secret)
+	name := bucket.Spec.ForProvider.CredentialsSecretRef.Name
+	namespace := bucket.Spec.ForProvider.CredentialsSecretRef.Namespace
+	err := kube.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, secret)
 	pipeline.StoreInContext(ctx, CredentialsSecretKey{}, secret)
-	return logIfNotError(err, log, 1, "Fetched credentials secret", "secret name", secret.Name)
+	return logIfNotError(err, log, 1, "Fetched credentials secret", "secret name", fmt.Sprintf("%s/%s", namespace, name))
 }
 
 func validateSecret(ctx context.Context) error {
@@ -87,10 +89,10 @@ func validateSecret(ctx context.Context) error {
 		return fmt.Errorf("secret %q does not have any data", secret.Name)
 	}
 
-	requiredKeys := []string{bucketv1.AccessKeyIDName, bucketv1.SecretAccessKeyName}
+	requiredKeys := []string{cloudscalev1.AccessKeyIDName, cloudscalev1.SecretAccessKeyName}
 	for _, key := range requiredKeys {
 		if val, exists := secret.Data[key]; !exists || string(val) == "" {
-			return fmt.Errorf("secret %q is missing on of the following keys or content: %s", secret.Name, requiredKeys)
+			return fmt.Errorf("secret %q is missing on of the following keys or content: %s", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name), requiredKeys)
 		}
 	}
 	return nil
