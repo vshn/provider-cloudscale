@@ -5,7 +5,7 @@ metadata:
   name: bucket
 spec:
   forProvider:
-    bucketName: my-provider-test-bucket-provider
+    bucketName: my-provider-test-bucket
     credentialsSecretRef:
       name: my-cloudscale-user-credentials
       namespace: default

@@ -15,7 +15,7 @@ local-install: export KUBECONFIG = $(KIND_KUBECONFIG)
 local-install: kind-load-image install-crd $(kind_dir)/.credentials.yaml ## Install Operator in local cluster
 	helm upgrade --install provider-cloudscale charts/provider-cloudscale \
 		--create-namespace --namespace provider-cloudscale-system \
-		--set "operator.args[0]=--log-level=2" \
+		--set "operator.args[0]=--log-level=1" \
 		--set "operator.args[1]=operator" \
 		--set podAnnotations.date="$(shell date)" \
 		--wait $(local_install_args)
