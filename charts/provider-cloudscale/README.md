@@ -44,8 +44,6 @@ Document your changes in values.yaml and let `make chart-docs` generate this sec
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
 | serviceAccount.name | string | `""` | The name of the service account to use. If not set and `.create` is `true`, a name is generated using the fullname template |
-| tokens.cloudscale | string | `""` | The cloudscale.ch API token |
-| tokens.externalSecretName | string | `""` | Name of the external secret if tokens are not managed by this chart.   See `templates/secret.yaml` to figure out how to setup the expected environment variables. |
 | tolerations | list | `[]` |  |
 
 <!---
