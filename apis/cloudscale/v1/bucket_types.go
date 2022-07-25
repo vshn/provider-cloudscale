@@ -42,7 +42,7 @@ type BucketParameters struct {
 
 	// Region is the name of the region where the bucket shall be created.
 	// The region must be available in the S3 endpoint.
-	// Changing the region after initial creation doesn't move the bucket and has essentially no effect.
+	// Cannot be changed after bucket is created.
 	Region string `json:"region"`
 }
 
@@ -56,6 +56,8 @@ type BucketSpec struct {
 type BucketObservation struct {
 	// BucketName is the name of the actual bucket.
 	BucketName string `json:"bucketName,omitempty"`
+	// Region is the region identifier of the actual bucket.
+	Region string `json:"region,omitempty"`
 }
 
 // BucketStatus represents the observed state of a Bucket.

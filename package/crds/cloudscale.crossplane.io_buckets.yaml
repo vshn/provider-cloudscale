@@ -102,8 +102,7 @@ spec:
                   region:
                     description: Region is the name of the region where the bucket
                       shall be created. The region must be available in the S3 endpoint.
-                      Changing the region after initial creation doesn't move the
-                      bucket and has essentially no effect.
+                      Cannot be changed after bucket is created.
                     type: string
                 required:
                 - credentialsSecretRef
@@ -289,6 +288,9 @@ spec:
                 properties:
                   bucketName:
                     description: BucketName is the name of the actual bucket.
+                    type: string
+                  region:
+                    description: Region is the region identifier of the actual bucket.
                     type: string
                 type: object
               conditions:
