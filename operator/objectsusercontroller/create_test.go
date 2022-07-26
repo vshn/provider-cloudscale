@@ -6,6 +6,7 @@ import (
 
 	pipeline "github.com/ccremer/go-command-pipeline"
 	cloudscalesdk "github.com/cloudscale-ch/cloudscale-go-sdk/v2"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/stretchr/testify/suite"
 	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 	"github.com/vshn/provider-cloudscale/operator/operatortest"
@@ -30,13 +31,18 @@ func (ts *ObjectsUserPipelineSuite) Test_ensureCredentialSecretFn() {
 	// Arrange
 	user := &cloudscalev1.ObjectsUser{
 		ObjectMeta: metav1.ObjectMeta{Name: "user", UID: "uid"},
-		Spec:       cloudscalev1.ObjectsUserSpec{ForProvider: cloudscalev1.ObjectsUserParameters{SecretRef: &corev1.SecretReference{Name: "secret", Namespace: "ensure-credentials"}}}}
+		Spec: cloudscalev1.ObjectsUserSpec{ResourceSpec: xpv1.ResourceSpec{
+			WriteConnectionSecretToReference: &xpv1.SecretReference{
+				Name: "secret", Namespace: "ensure-credentials",
+			}},
+		},
+	}
 
 	csUser := &cloudscalesdk.ObjectsUser{
 		Keys: []map[string]string{{"access_key": "access", "secret_key": "secret"}},
 	}
 
-	ts.EnsureNS(user.Spec.ForProvider.SecretRef.Namespace)
+	ts.EnsureNS(user.Spec.WriteConnectionSecretToReference.Namespace)
 
 	p := ObjectsUserPipeline{
 		kube:   ts.Client,

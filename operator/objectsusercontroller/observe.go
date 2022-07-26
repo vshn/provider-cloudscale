@@ -12,6 +12,8 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 	"github.com/vshn/provider-cloudscale/operator/steps"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/types"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
@@ -77,10 +79,15 @@ func (p *ObjectsUserPipeline) getObjectsUserFn(user *cloudscalev1.ObjectsUser) f
 	}
 }
 
-func (p *ObjectsUserPipeline) observeCredentialsHandler(ctx context.Context, err error) error {
-	log := controllerruntime.LoggerFrom(ctx)
-	log.V(1).Error(err, "Credentials Secret needs reconciling")
-	return nil
+func (p *ObjectsUserPipeline) fetchCredentialsSecretFn(user *cloudscalev1.ObjectsUser) func(ctx context.Context) error {
+	return func(ctx context.Context) error {
+		kube := p.kube
+		secretRef := user.Spec.WriteConnectionSecretToReference
+		p.credentialsSecret = &corev1.Secret{}
+
+		err := kube.Get(ctx, types.NamespacedName{Namespace: secretRef.Namespace, Name: secretRef.Name}, p.credentialsSecret)
+		return err
+	}
 }
 
 func (p *ObjectsUserPipeline) checkCredentials(_ context.Context) error {
@@ -95,6 +102,12 @@ func (p *ObjectsUserPipeline) checkCredentials(_ context.Context) error {
 			return fmt.Errorf("secret %q is missing on of the following keys or content: %s", fmt.Sprintf("%s/%s", p.credentialsSecret.Namespace, p.credentialsSecret.Name), key)
 		}
 	}
+	return nil
+}
+
+func (p *ObjectsUserPipeline) observeCredentialsHandler(ctx context.Context, err error) error {
+	log := controllerruntime.LoggerFrom(ctx)
+	log.V(1).Error(err, "Credentials Secret needs reconciling")
 	return nil
 }
 

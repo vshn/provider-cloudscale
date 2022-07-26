@@ -60,14 +60,14 @@ func newObjectsUserSample() *cloudscalev1.ObjectsUser {
 		Spec: cloudscalev1.ObjectsUserSpec{
 			ResourceSpec: xpv1.ResourceSpec{
 				ProviderConfigReference: &xpv1.Reference{Name: "provider-config"},
+				WriteConnectionSecretToReference: &xpv1.SecretReference{
+					Name:      "my-cloudscale-user-credentials",
+					Namespace: "default",
+				},
 			},
 			ForProvider: cloudscalev1.ObjectsUserParameters{
 				Tags: map[string]string{
 					"key": "value",
-				},
-				SecretRef: &corev1.SecretReference{
-					Name:      "my-cloudscale-user-credentials",
-					Namespace: "default",
 				},
 			},
 		},

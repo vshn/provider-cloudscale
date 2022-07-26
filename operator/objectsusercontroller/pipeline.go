@@ -39,7 +39,7 @@ func NewPipeline(client client.Client, recorder event.Recorder, csClient *clouds
 
 func hasSecretRef(user *cloudscalev1.ObjectsUser) pipeline.Predicate {
 	return func(ctx context.Context) bool {
-		return user.Spec.ForProvider.SecretRef != nil
+		return user.Spec.WriteConnectionSecretToReference != nil
 	}
 }
 

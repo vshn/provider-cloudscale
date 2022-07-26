@@ -6,7 +6,6 @@
 package v1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -224,11 +223,6 @@ func (in *ObjectsUserParameters) DeepCopyInto(out *ObjectsUserParameters) {
 		for key, val := range *in {
 			(*out)[key] = val
 		}
-	}
-	if in.SecretRef != nil {
-		in, out := &in.SecretRef, &out.SecretRef
-		*out = new(corev1.SecretReference)
-		**out = **in
 	}
 }
 

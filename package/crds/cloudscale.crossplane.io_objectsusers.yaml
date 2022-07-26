@@ -73,25 +73,6 @@ spec:
                       is used. There can be multiple users that have the same display
                       name in cloudscale.ch, but they will have different user IDs.
                     type: string
-                  secretRef:
-                    description: SecretRef is an optional reference to a secret where
-                      the ObjectsUser credentials are stored. This is in addition
-                      to the Crossplane's mechanism of "ConnectionDetails" via Crossplane
-                      Compositions. Use the SecretRef to store the credentials in
-                      case Compositions are not available. If a previously set reference
-                      is unset, the secret is being deleted if the secret is owned
-                      by the ObjectsUser.
-                    properties:
-                      name:
-                        description: name is unique within a namespace to reference
-                          a secret resource.
-                        type: string
-                      namespace:
-                        description: namespace defines the space within which the
-                          secret name must be unique.
-                        type: string
-                    type: object
-                    x-kubernetes-map-type: atomic
                   tags:
                     additionalProperties:
                       type: string

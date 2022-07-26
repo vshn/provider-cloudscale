@@ -5,12 +5,12 @@ metadata:
   name: my-cloudscale-user
 spec:
   forProvider:
-    secretRef:
-      name: my-cloudscale-user-credentials
-      namespace: default
     tags:
       key: value
   providerConfigRef:
     name: provider-config
+  writeConnectionSecretToRef:
+    name: my-cloudscale-user-credentials
+    namespace: default
 status:
   atProvider: {}

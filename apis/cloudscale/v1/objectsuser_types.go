@@ -5,7 +5,6 @@ import (
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -20,12 +19,6 @@ type ObjectsUserParameters struct {
 	// Tags contain additional key-value information of an ObjectsUser.
 	// If this map is empty, existing tags will be removed.
 	Tags Tags `json:"tags,omitempty"`
-
-	// SecretRef is an optional reference to a secret where the ObjectsUser credentials are stored.
-	// This is in addition to the Crossplane's mechanism of "ConnectionDetails" via Crossplane Compositions.
-	// Use the SecretRef to store the credentials in case Compositions are not available.
-	// If a previously set reference is unset, the secret is being deleted if the secret is owned by the ObjectsUser.
-	SecretRef *corev1.SecretReference `json:"secretRef,omitempty"`
 }
 
 // ObjectsUserSpec defines the desired state of an ObjectsUser.

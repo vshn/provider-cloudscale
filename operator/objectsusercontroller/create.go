@@ -87,16 +87,17 @@ func (p *ObjectsUserPipeline) emitCreationEventFn(obj runtime.Object) func(ctx c
 	}
 }
 
+// ensureCredentialsSecretFn creates the secret with ObjectsUser's S3 credentials.
+// The secret is updated in case the keys change, and an owner reference to the ObjectsUser is set.
 func (p *ObjectsUserPipeline) ensureCredentialsSecretFn(user *cloudscalev1.ObjectsUser) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
 		kube := p.kube
 		csUser := p.csUser
 		log := controllerruntime.LoggerFrom(ctx)
 
-		name := user.Spec.ForProvider.SecretRef.Name
-		namespace := user.Spec.ForProvider.SecretRef.Namespace
+		secretRef := user.Spec.WriteConnectionSecretToReference
 
-		p.credentialsSecret = &corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace}}
+		p.credentialsSecret = &corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: secretRef.Name, Namespace: secretRef.Namespace}}
 		_, err := controllerruntime.CreateOrUpdate(ctx, kube, p.credentialsSecret, func() error {
 			secret := p.credentialsSecret
 			secret.Labels = labels.Merge(secret.Labels, getCommonLabels(user.Name))
@@ -111,7 +112,7 @@ func (p *ObjectsUserPipeline) ensureCredentialsSecretFn(user *cloudscalev1.Objec
 		if err != nil {
 			return err
 		}
-		log.V(1).Info("Ensured credential secret", "secretName", fmt.Sprintf("%s/%s", namespace, name))
+		log.V(1).Info("Ensured credential secret", "secretName", fmt.Sprintf("%s/%s", secretRef.Namespace, secretRef.Name))
 		return nil
 	}
 }
