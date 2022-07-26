@@ -1,9 +1,11 @@
 package bucketcontroller
 
 import (
+	"context"
 	"net/url"
 	"testing"
 
+	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
@@ -59,9 +61,10 @@ func Test_bucketConnector_validateSecret(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{Name: "secret", Namespace: "default"},
 				Data:       tc.givenSecretData}
 
-			c := &bucketConnector{credentialsSecret: secret}
-
-			err := c.validateSecret(nil)
+			c := &bucketConnector{}
+			ctx := pipeline.MutableContext(context.Background())
+			pipeline.StoreInContext(ctx, credentialsSecretKey{}, secret)
+			err := c.validateSecret(ctx)
 
 			if tc.expectedError != "" {
 				assert.EqualError(t, err, tc.expectedError)

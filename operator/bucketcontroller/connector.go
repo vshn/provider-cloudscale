@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
@@ -23,24 +24,31 @@ import (
 type bucketConnector struct {
 	kube     client.Client
 	recorder event.Recorder
-
-	bucket            *cloudscalev1.Bucket
-	credentialsSecret *corev1.Secret
-	minio             *minio.Client
 }
+
+type minioKey struct{}
+type credentialsSecretKey struct{}
 
 // Connect implements managed.ExternalConnecter.
 func (c *bucketConnector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
+	ctx = pipeline.MutableContext(ctx)
 	log := controllerruntime.LoggerFrom(ctx)
 	log.V(1).Info("Connecting resource")
 
 	bucket := fromManaged(mg)
-	c.bucket = bucket
+
+	if isBucketAlreadyDeleted(bucket) {
+		// See https://github.com/vshn/provider-cloudscale/issues/24 for full explanation as to why.
+		// We do this to prevent after-deletion reconciliations since there is a chance that we might not have the access credentials anymore.
+		log.V(1).Info("Bucket already deleted, skipping observation")
+		return &NoopClient{}, nil
+	}
+
 	pipe := pipeline.NewPipeline().WithBeforeHooks(steps.DebugLogger(ctx)).
 		WithSteps(
-			pipeline.NewStepFromFunc("fetch secret", c.fetchCredentialsSecret),
+			pipeline.NewStepFromFunc("fetch secret", c.fetchCredentialsSecretFn(bucket)),
 			pipeline.NewStepFromFunc("validate secret", c.validateSecret),
-			pipeline.NewStepFromFunc("create S3 client", c.createS3Client),
+			pipeline.NewStepFromFunc("create S3 client", c.createS3ClientFn(bucket)),
 		)
 	result := pipe.RunWithContext(ctx)
 
@@ -48,27 +56,31 @@ func (c *bucketConnector) Connect(ctx context.Context, mg resource.Managed) (man
 		return nil, result.Err()
 	}
 
+	s3Client := pipeline.MustLoadFromContext(ctx, minioKey{}).(*minio.Client)
+
 	// We don't need anything from a ProviderConfig.
 	// The S3 credentials are loaded as part of the CRUD methods.
-	return NewProvisioningPipeline(c.kube, c.recorder, c.minio), nil
+	return NewProvisioningPipeline(c.kube, c.recorder, s3Client), nil
 }
 
-func (c *bucketConnector) fetchCredentialsSecret(ctx context.Context) error {
-	bucket := c.bucket
-	log := controllerruntime.LoggerFrom(ctx)
+func (c *bucketConnector) fetchCredentialsSecretFn(bucket *cloudscalev1.Bucket) func(ctx context.Context) error {
+	return func(ctx context.Context) error {
+		log := controllerruntime.LoggerFrom(ctx)
 
-	c.credentialsSecret = &corev1.Secret{}
-	secretRef := bucket.Spec.ForProvider.CredentialsSecretRef
-	err := c.kube.Get(ctx, types.NamespacedName{Name: secretRef.Name, Namespace: secretRef.Namespace}, c.credentialsSecret)
-	if err != nil {
-		return err
+		secret := &corev1.Secret{}
+		secretRef := bucket.Spec.ForProvider.CredentialsSecretRef
+		err := c.kube.Get(ctx, types.NamespacedName{Name: secretRef.Name, Namespace: secretRef.Namespace}, secret)
+		if err != nil {
+			return err
+		}
+		pipeline.StoreInContext(ctx, credentialsSecretKey{}, secret)
+		log.V(1).Info("Fetched credentials secret", "secret name", fmt.Sprintf("%s/%s", secretRef.Namespace, secretRef.Name))
+		return nil
 	}
-	log.V(1).Info("Fetched credentials secret", "secret name", fmt.Sprintf("%s/%s", secretRef.Namespace, secretRef.Name))
-	return nil
 }
 
-func (c *bucketConnector) validateSecret(_ context.Context) error {
-	secret := c.credentialsSecret
+func (c *bucketConnector) validateSecret(ctx context.Context) error {
+	secret := pipeline.MustLoadFromContext(ctx, credentialsSecretKey{}).(*corev1.Secret)
 
 	if secret.Data == nil {
 		return fmt.Errorf("secret %q does not have any data", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name))
@@ -83,30 +95,58 @@ func (c *bucketConnector) validateSecret(_ context.Context) error {
 	return nil
 }
 
-// createS3Client creates a new client using the S3 credentials from the Secret.
-func (c *bucketConnector) createS3Client(_ context.Context) error {
-	bucket := c.bucket
-	secret := c.credentialsSecret
+// createS3ClientFn creates a new client using the S3 credentials from the Secret.
+func (c *bucketConnector) createS3ClientFn(bucket *cloudscalev1.Bucket) func(ctx context.Context) error {
+	return func(ctx context.Context) error {
+		secret := pipeline.MustLoadFromContext(ctx, credentialsSecretKey{}).(*corev1.Secret)
 
-	parsed, err := url.Parse(bucket.Spec.ForProvider.EndpointURL)
-	if err != nil {
+		parsed, err := url.Parse(bucket.Spec.ForProvider.EndpointURL)
+		if err != nil {
+			return err
+		}
+
+		// we assume here that the secret has the expected keys and data.
+		accessKey := string(secret.Data[cloudscalev1.AccessKeyIDName])
+		secretKey := string(secret.Data[cloudscalev1.SecretAccessKeyName])
+
+		host := parsed.Host
+		if parsed.Host == "" {
+			host = parsed.Path // if no scheme is given, it's parsed as a path -.-
+		}
+		s3Client, err := minio.New(host, &minio.Options{
+			Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
+			Secure: isTLSEnabled(parsed),
+		})
+		pipeline.StoreInContext(ctx, minioKey{}, s3Client)
 		return err
 	}
+}
 
-	// we assume here that the secret has the expected keys and data.
-	accessKey := string(secret.Data[cloudscalev1.AccessKeyIDName])
-	secretKey := string(secret.Data[cloudscalev1.SecretAccessKeyName])
+// isBucketAlreadyDeleted returns true if the status conditions are in a state where one can assume that the deletion of a bucket was successful in a previous reconciliation.
+// This is useful to prevent further reconciliation with possibly lost S3 credentials.
+func isBucketAlreadyDeleted(bucket *cloudscalev1.Bucket) bool {
+	readyCond := findCondition(bucket.Status.Conditions, xpv1.TypeReady)
+	syncCond := findCondition(bucket.Status.Conditions, xpv1.TypeSynced)
 
-	host := parsed.Host
-	if parsed.Host == "" {
-		host = parsed.Path // if no scheme is given, it's parsed as a path -.-
+	if readyCond != nil && syncCond != nil {
+		// These 4 criteria must be in exactly this combination
+		if readyCond.Status == corev1.ConditionFalse &&
+			readyCond.Reason == xpv1.ReasonDeleting &&
+			syncCond.Status == corev1.ConditionTrue &&
+			syncCond.Reason == xpv1.ReasonReconcileSuccess {
+			return true
+		}
 	}
-	s3Client, err := minio.New(host, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
-		Secure: isTLSEnabled(parsed),
-	})
-	c.minio = s3Client
-	return err
+	return false
+}
+
+func findCondition(conds []xpv1.Condition, condType xpv1.ConditionType) *xpv1.Condition {
+	for _, cond := range conds {
+		if cond.Type == condType {
+			return &cond
+		}
+	}
+	return nil
 }
 
 // isTLSEnabled returns false if the scheme is explicitly set to `http` or `HTTP`
