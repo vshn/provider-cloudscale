@@ -18,3 +18,7 @@ node_modules/
 # Charts
 .cr-release-packages/
 .cr-index/
+
+# Crossplane package
+/package/crossplane.yaml
+/package/*.xpkg
