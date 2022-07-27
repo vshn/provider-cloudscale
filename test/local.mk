@@ -45,4 +45,5 @@ envtest_crd_dir ?= $(kind_dir)/crds
 .envtest_crds: .envtest_crd_dir
 
 $(kind_dir)/.credentials.yaml:
+	@if [ "$$CLOUDSCALE_API_TOKEN" = "" ]; then echo "Environment variable CLOUDSCALE_API_TOKEN not set"; exit 1; fi
 	kubectl create secret generic --from-literal CLOUDSCALE_API_TOKEN=$$CLOUDSCALE_API_TOKEN -o yaml --dry-run=client api-token > $@
