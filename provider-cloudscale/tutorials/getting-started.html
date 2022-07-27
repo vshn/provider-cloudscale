@@ -196,13 +196,19 @@
 <div class="listingblock">
 <div class="title">objectsuser.yaml</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloudscale.s3.appcat.vshn.io/v1
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloudscale.crossplane.io/v1
 kind: ObjectsUser
 metadata:
   name: my-cloudscale-user
-  namespace: default
 spec:
-  secretRef: my-cloudscale-user-credentials</code></pre>
+  forProvider:
+    tags:
+      key: value
+  providerConfigRef:
+    name: provider-config
+  writeConnectionSecretToRef:
+    name: my-cloudscale-user-credentials
+    namespace: default</code></pre>
 </div>
 </div>
 </li>
