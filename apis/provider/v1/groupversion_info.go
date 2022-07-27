@@ -2,7 +2,7 @@
 // +groupName=cloudscale.crossplane.io
 // +versionName=v1
 
-// Package v1 contains the v1 group cloudscale.crossplane.io resources of provider-cloudscale.
+// Package v1alpha1 contains the core resources of the provider-cloudscale.
 package v1
 
 import (

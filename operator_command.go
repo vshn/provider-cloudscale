@@ -7,7 +7,6 @@ import (
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/vshn/provider-cloudscale/apis"
 	"github.com/vshn/provider-cloudscale/operator"
-	"github.com/vshn/provider-cloudscale/operator/cloudscale"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -36,10 +35,6 @@ func newOperatorCommand() *cli.Command {
 			&cli.BoolFlag{Name: "leader-election-enabled", Value: false, EnvVars: envVars("LEADER_ELECTION_ENABLED"),
 				Usage:       "Use leader election for the controller manager.",
 				Destination: &command.LeaderElectionEnabled,
-			},
-			&cli.StringFlag{Name: "cloudscale-api-token", Value: "", EnvVars: []string{"CLOUDSCALE_API_TOKEN"},
-				Usage:       "Token to use against cloudscale.ch API to provision ObjectsUsers.",
-				Destination: &cloudscale.APIToken,
 			},
 		},
 	}

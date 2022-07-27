@@ -12,15 +12,14 @@ $(setup_envtest_bin):
 
 .PHONY: local-install
 local-install: export KUBECONFIG = $(KIND_KUBECONFIG)
-local-install: kind-load-image install-crd ## Install Operator in local cluster
-	yq -n e '.tokens.cloudscale=strenv(CLOUDSCALE_API_TOKEN)' > $(kind_dir)/.credentials.yaml
+local-install: kind-load-image install-crd $(kind_dir)/.credentials.yaml ## Install Operator in local cluster
 	helm upgrade --install provider-cloudscale charts/provider-cloudscale \
 		--create-namespace --namespace provider-cloudscale-system \
-		--set "operator.args[0]=--log-level=2" \
+		--set "operator.args[0]=--log-level=1" \
 		--set "operator.args[1]=operator" \
 		--set podAnnotations.date="$(shell date)" \
-		--values $(kind_dir)/.credentials.yaml \
 		--wait $(local_install_args)
+	kubectl apply -n provider-cloudscale-system -f $(kind_dir)/.credentials.yaml
 
 .PHONY: kind-run-operator
 kind-run-operator: export KUBECONFIG = $(KIND_KUBECONFIG)
@@ -44,3 +43,6 @@ envtest_crd_dir ?= $(kind_dir)/crds
 	@cp -r package/crds $(kind_dir)
 
 .envtest_crds: .envtest_crd_dir
+
+$(kind_dir)/.credentials.yaml:
+	kubectl create secret generic --from-literal CLOUDSCALE_API_TOKEN=$(shell echo $$CLOUDSCALE_API_TOKEN) -o yaml --dry-run=client api-token > $@

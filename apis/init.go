@@ -2,7 +2,7 @@
 package apis
 
 import (
-	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
+	providerv1 "github.com/vshn/provider-cloudscale/apis/provider/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
@@ -15,7 +15,7 @@ func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
 		cloudscalev1.SchemeBuilder.AddToScheme,
-		bucketv1.SchemeBuilder.AddToScheme,
+		providerv1.SchemeBuilder.AddToScheme,
 	)
 }
 

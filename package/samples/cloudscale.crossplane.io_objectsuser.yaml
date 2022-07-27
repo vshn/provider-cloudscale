@@ -1,6 +1,7 @@
 apiVersion: cloudscale.crossplane.io/v1
 kind: ObjectsUser
 metadata:
+  creationTimestamp: null
   name: my-cloudscale-user
 spec:
   forProvider:
@@ -11,3 +12,5 @@ spec:
   writeConnectionSecretToRef:
     name: my-cloudscale-user-credentials
     namespace: default
+status:
+  atProvider: {}

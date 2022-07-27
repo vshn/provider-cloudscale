@@ -66,7 +66,7 @@ generate-go: ## Generate Go artifacts
 
 .PHONY: generate-docs
 generate-docs: generate-go ## Generate example code snippets for documentation
-	@yq e 'del(.metadata.creationTimestamp) | del(.metadata.generation) | del(.status)' package/samples/cloudscale.s3.appcat.vshn.io_objectsuser.yaml > $(docs_moduleroot_dir)/examples/cloudscale_objectsuser.yaml
+	@yq e 'del(.metadata.creationTimestamp) | del(.metadata.generation) | del(.status)' package/samples/cloudscale.crossplane.io_objectsuser.yaml > $(docs_moduleroot_dir)/examples/cloudscale_objectsuser.yaml
 
 .PHONY: install-crd
 install-crd: export KUBECONFIG = $(KIND_KUBECONFIG)

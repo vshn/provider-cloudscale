@@ -19,13 +19,6 @@ operator:
   # -- Overrides arguments passed to the entrypoint
   args: []
 
-tokens:
-  # -- The cloudscale.ch API token
-  cloudscale: ""
-  # -- Name of the external secret if tokens are not managed by this chart.  
-  # See `templates/secret.yaml` to figure out how to setup the expected environment variables.
-  externalSecretName: ""
-
 # -- List of image pull secrets if custom image is behind authentication.
 imagePullSecrets: []
 nameOverride: ""

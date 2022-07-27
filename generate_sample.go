@@ -16,9 +16,11 @@ import (
 	"path/filepath"
 	"strings"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/vshn/provider-cloudscale/apis"
-	bucketv1 "github.com/vshn/provider-cloudscale/apis/bucket/v1"
 	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
+	providerv1 "github.com/vshn/provider-cloudscale/apis/provider/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	serializerjson "k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -30,6 +32,7 @@ func main() {
 	failIfError(apis.AddToScheme(scheme))
 	generateCloudscaleObjectsUserSample()
 	generateBucketSample()
+	generateProviderConfigSample()
 }
 
 func generateCloudscaleObjectsUserSample() {
@@ -42,32 +45,73 @@ func generateBucketSample() {
 	serialize(spec, true)
 }
 
+func generateProviderConfigSample() {
+	spec := newProviderConfigSample()
+	serialize(spec, true)
+}
+
 func newObjectsUserSample() *cloudscalev1.ObjectsUser {
 	return &cloudscalev1.ObjectsUser{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: cloudscalev1.ObjectsUserGroupVersionKind.GroupVersion().String(),
 			Kind:       cloudscalev1.ObjectsUserKind,
 		},
-		ObjectMeta: metav1.ObjectMeta{Name: "my-cloudscale-user", Namespace: "default", Generation: 1},
+		ObjectMeta: metav1.ObjectMeta{Name: "my-cloudscale-user"},
 		Spec: cloudscalev1.ObjectsUserSpec{
-			SecretRef: "my-cloudscale-user-credentials",
+			ResourceSpec: xpv1.ResourceSpec{
+				ProviderConfigReference: &xpv1.Reference{Name: "provider-config"},
+				WriteConnectionSecretToReference: &xpv1.SecretReference{
+					Name:      "my-cloudscale-user-credentials",
+					Namespace: "default",
+				},
+			},
+			ForProvider: cloudscalev1.ObjectsUserParameters{
+				Tags: map[string]string{
+					"key": "value",
+				},
+			},
 		},
 		Status: cloudscalev1.ObjectsUserStatus{},
 	}
 }
 
-func newBucketSample() *bucketv1.Bucket {
-	return &bucketv1.Bucket{
+func newBucketSample() *cloudscalev1.Bucket {
+	return &cloudscalev1.Bucket{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: bucketv1.BucketGroupVersionKind.GroupVersion().String(),
-			Kind:       bucketv1.BucketKind,
+			APIVersion: cloudscalev1.BucketGroupVersionKind.GroupVersion().String(),
+			Kind:       cloudscalev1.BucketKind,
 		},
-		ObjectMeta: metav1.ObjectMeta{Name: "bucket", Namespace: "default"},
-		Spec: bucketv1.BucketSpec{
-			CredentialsSecretRef: "my-cloudscale-user-credentials",
-			EndpointURL:          "objects.rma.cloudscale.ch",
-			BucketName:           "my-provider-test-bucket",
-			Region:               "rma",
+		ObjectMeta: metav1.ObjectMeta{Name: "bucket"},
+		Spec: cloudscalev1.BucketSpec{
+			ForProvider: cloudscalev1.BucketParameters{
+				CredentialsSecretRef: corev1.SecretReference{
+					Name:      "my-cloudscale-user-credentials",
+					Namespace: "default",
+				},
+				EndpointURL: "objects.rma.cloudscale.ch",
+				BucketName:  "my-provider-test-bucket",
+				Region:      "rma",
+			},
+		},
+	}
+}
+
+func newProviderConfigSample() *providerv1.ProviderConfig {
+	return &providerv1.ProviderConfig{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: providerv1.ProviderConfigGroupVersionKind.GroupVersion().String(),
+			Kind:       providerv1.ProviderConfigKind,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "provider-config"},
+		Spec: providerv1.ProviderConfigSpec{
+			Credentials: providerv1.ProviderCredentials{
+				Source: xpv1.CredentialsSourceInjectedIdentity,
+				APITokenSecretRef: corev1.SecretReference{
+					Name:      "api-token",
+					Namespace: "provider-cloudscale-system",
+				},
+			},
 		},
 	}
 }
