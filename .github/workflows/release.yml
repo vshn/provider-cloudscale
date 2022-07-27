@@ -40,6 +40,9 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Push package image
+        run: make package-push -e IMG_TAG=${GITHUB_REF##*/}
+
       - name: Build changelog from PRs with labels
         id: build_changelog
         uses: mikepenz/release-changelog-builder-action@v3
@@ -60,4 +63,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CONTAINER_REGISTRY: ghcr.io
-          IMAGE_NAME: ${{ github.repository }}
+          IMAGE_NAME: ${{ github.repository }}/controller

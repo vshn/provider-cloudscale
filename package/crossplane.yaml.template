@@ -1,0 +1,16 @@
+apiVersion: meta.pkg.crossplane.io/v1alpha1
+kind: Provider
+metadata:
+  name: provider-cloudscale
+  annotations:
+    meta.crossplane.io/maintainer: VSHN <info@vshn.net>
+    meta.crossplane.io/source: github.com/vshn/provider-cloudscale
+    meta.crossplane.io/license: Apache-2
+    meta.crossplane.io/description: |
+      Crossplane provider for managing resources on cloudscale.ch
+spec:
+  controller:
+    image: ghcr.io/vshn/provider-cloudscale/controller:latest
+    permissionRequests: []
+  crossplane:
+    version: ">=v1.9.0"

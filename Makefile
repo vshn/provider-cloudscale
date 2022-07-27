@@ -20,6 +20,8 @@ include Makefile.vars.mk
 -include charts/charts.mk
 # Local Env & testing
 -include test/local.mk
+# Crossplane packaging
+-include package/package.mk
 
 .PHONY: help
 help: ## Show this help
@@ -66,7 +68,7 @@ generate-go: ## Generate Go artifacts
 
 .PHONY: generate-docs
 generate-docs: generate-go ## Generate example code snippets for documentation
-	@yq e 'del(.metadata.creationTimestamp) | del(.metadata.generation) | del(.status)' package/samples/cloudscale.crossplane.io_objectsuser.yaml > $(docs_moduleroot_dir)/examples/cloudscale_objectsuser.yaml
+	@yq e 'del(.metadata.creationTimestamp) | del(.metadata.generation) | del(.status)' ./samples/cloudscale.crossplane.io_objectsuser.yaml > $(docs_moduleroot_dir)/examples/cloudscale_objectsuser.yaml
 
 .PHONY: install-crd
 install-crd: export KUBECONFIG = $(KIND_KUBECONFIG)
@@ -76,7 +78,7 @@ install-crd: generate kind-setup ## Install CRDs into cluster
 .PHONY: install-samples
 install-samples: export KUBECONFIG = $(KIND_KUBECONFIG)
 install-samples: generate-go install-crd ## Install samples into cluster
-	yq package/samples/*.yaml | kubectl apply -f -
+	yq ./samples/*.yaml | kubectl apply -f -
 
 .PHONY: run-operator
 run-operator: ## Run in Operator mode against your current kube context
@@ -84,9 +86,9 @@ run-operator: ## Run in Operator mode against your current kube context
 
 .PHONY: clean
 clean: kind-clean ## Cleans local build artifacts
-	rm -rf docs/node_modules $(docs_out_dir) dist .cache
+	rm -rf docs/node_modules $(docs_out_dir) dist .cache package/*.xpkg
 	$(DOCKER_CMD) rmi $(CONTAINER_IMG) || true
 
 .PHONY: release-prepare
 release-prepare: generate-go ## Prepares artifacts for releases
-	@cat package/crds/*.yaml | yq > .github/crds.yaml
+	@yq package/crds/*.yaml > .github/crds.yaml
