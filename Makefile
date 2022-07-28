@@ -16,8 +16,6 @@ include Makefile.vars.mk
 -include docs/antora-preview.mk docs/antora-build.mk
 # Optional kind module
 -include kind/kind.mk
-# Chart-related
--include charts/charts.mk
 # Local Env & testing
 -include test/local.mk
 # Crossplane packaging
