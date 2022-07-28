@@ -86,7 +86,3 @@ run-operator: ## Run in Operator mode against your current kube context
 clean: kind-clean ## Cleans local build artifacts
 	rm -rf docs/node_modules $(docs_out_dir) dist .cache package/*.xpkg
 	$(DOCKER_CMD) rmi $(CONTAINER_IMG) || true
-
-.PHONY: release-prepare
-release-prepare: generate-go ## Prepares artifacts for releases
-	@yq package/crds/*.yaml > .github/crds.yaml
