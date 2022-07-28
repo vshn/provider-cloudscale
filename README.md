@@ -11,9 +11,9 @@
 [releases]: https://github.com/vshn/provider-cloudscale/releases
 [codeclimate]: https://codeclimate.com/github/vshn/provider-cloudscale
 
-VSHN opinionated operator to deploy S3 resources on supported cloud providers.
+Crossplane provider for managing resources on cloudscale.ch.
 
-https://vshn.github.io/provider-cloudscale/
+Documentation: https://vshn.github.io/provider-cloudscale/
 
 ## Local Development
 
@@ -34,7 +34,7 @@ Some other requirements (e.g. `kind`) will be compiled on-the-fly and put in the
 * `make generate` to (re)generate additional code artifacts
 * `make test` run test suite
 * `make local-install` to install the operator in local cluster
-* `make install-samples` to run the provider in local cluster and apply a sample instance
+* `make install-samples` to run the provider in local cluster and apply sample manifests
 * `make run-operator` to run the code in operator mode against your current kubecontext
 
 See all targets with `make help`
