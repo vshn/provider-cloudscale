@@ -12,4 +12,6 @@
 //* xref:references/example.adoc[Example Reference]
 
 .Explanation
-//* xref:explanations/example.adoc[Example Explanation]
+* For Developers
+** xref:explanations/dev/objectsuser-reconciliation.adoc[ObjectsUser Reconciliation]
+** xref:explanations/dev/bucket-reconciliation.adoc[Bucket Reconciliation]
