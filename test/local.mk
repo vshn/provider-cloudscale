@@ -1,3 +1,6 @@
+crossplane_sentinel = $(kind_dir)/crossplane_sentinel
+registry_sentinel = $(kind_dir)/registry_sentinel
+
 setup_envtest_bin = $(kind_dir)/setup-envtest
 
 # Prepare binary
@@ -12,14 +15,45 @@ $(setup_envtest_bin):
 
 .PHONY: local-install
 local-install: export KUBECONFIG = $(KIND_KUBECONFIG)
-local-install: kind-load-image install-crd $(kind_dir)/.credentials.yaml ## Install Operator in local cluster
-	helm upgrade --install provider-cloudscale charts/provider-cloudscale \
-		--create-namespace --namespace provider-cloudscale-system \
-		--set "operator.args[0]=--log-level=1" \
-		--set "operator.args[1]=operator" \
-		--set podAnnotations.date="$(shell date)" \
-		--wait $(local_install_args)
-	kubectl apply -n provider-cloudscale-system -f $(kind_dir)/.credentials.yaml
+# for ControllerConfig:
+local-install: export INTERNAL_PACKAGE_IMG = registry.registry-system.svc.cluster.local:5000/$(PROJECT_OWNER)/$(PROJECT_NAME)/package:$(IMG_TAG)
+# for package-push:
+local-install: PACKAGE_IMG = localhost:5000/$(PROJECT_OWNER)/$(PROJECT_NAME)/package:$(IMG_TAG)
+local-install: kind-load-image crossplane-setup registry-setup $(kind_dir)/.credentials.yaml package-push  ## Install Operator in local cluster
+	yq e '.spec.metadata.annotations."local.dev/installed"="$(shell date)"' test/controllerconfig-cloudscale.yaml | kubectl apply -f -
+	yq e '.spec.package=strenv(INTERNAL_PACKAGE_IMG)' test/provider-cloudscale.yaml | kubectl apply -f -
+	kubectl wait --for condition=Healthy provider.pkg.crossplane.io/provider-cloudscale --timeout 60s
+	kubectl -n crossplane-system wait --for condition=Ready $$(kubectl -n crossplane-system get pods -o name -l pkg.crossplane.io/provider=provider-cloudscale) --timeout 60s
+	kubectl apply -n crossplane-system -f $(kind_dir)/.credentials.yaml
+
+.PHONY: crossplane-setup
+crossplane-setup: $(crossplane_sentinel) ## Installs Crossplane in kind cluster.
+
+$(crossplane_sentinel): export KUBECONFIG = $(KIND_KUBECONFIG)
+$(crossplane_sentinel): $(KIND_KUBECONFIG)
+	helm repo add crossplane https://charts.crossplane.io/stable
+	helm upgrade --install crossplane crossplane/crossplane \
+		--create-namespace \
+		--namespace crossplane-system \
+		--set "args[0]='--debug'" \
+		--set "args[1]='--enable-composition-revisions'" \
+		--wait
+	@touch $@
+
+.PHONY: registry-setup
+registry-setup: $(registry_sentinel) ## Installs an image registry required for the package image in kind cluster.
+
+$(registry_sentinel): export KUBECONFIG = $(KIND_KUBECONFIG)
+$(registry_sentinel): $(KIND_KUBECONFIG)
+	helm repo add twuni https://helm.twun.io
+	helm upgrade --install registry twuni/docker-registry \
+		--create-namespace \
+		--namespace registry-system \
+		--set service.type=NodePort \
+		--set service.nodePort=30500 \
+		--set fullnameOverride=registry \
+		--wait
+	@touch $@
 
 .PHONY: kind-run-operator
 kind-run-operator: export KUBECONFIG = $(KIND_KUBECONFIG)

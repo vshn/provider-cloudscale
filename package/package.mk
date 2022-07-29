@@ -17,7 +17,7 @@ package: package-push
 package-provider: export CONTROLLER_IMG = $(CONTAINER_IMG)
 package-provider: $(crossplane_bin) generate-go ## Build Crossplane package
 	@rm -rf package/*.xpkg
-	@yq e '.spec.controller.permissionRequests = load("$(kind_dir)/rbac/role.yaml").rules | .spec.controller.image=strenv(CONTROLLER_IMG)' $(package_dir)/crossplane.yaml.template > $(package_dir)/crossplane.yaml
+	@yq e '.spec.controller.image=strenv(CONTROLLER_IMG)' $(package_dir)/crossplane.yaml.template > $(package_dir)/crossplane.yaml
 	@$(crossplane_bin) build provider -f $(package_dir)
 	@echo Package file: $$(ls $(package_dir)/*.xpkg)
 

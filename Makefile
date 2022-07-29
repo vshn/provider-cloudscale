@@ -75,8 +75,13 @@ install-crd: generate kind-setup ## Install CRDs into cluster
 
 .PHONY: install-samples
 install-samples: export KUBECONFIG = $(KIND_KUBECONFIG)
-install-samples: generate-go install-crd ## Install samples into cluster
+install-samples: kind-setup ## Install samples into cluster
 	yq ./samples/*.yaml | kubectl apply -f -
+
+.PHONY: delete-samples
+delete-samples: export KUBECONFIG = $(KIND_KUBECONFIG)
+delete-samples: kind-setup
+	yq ./samples/*.yaml | kubectl delete --ignore-not-found --wait=false -f -
 
 .PHONY: run-operator
 run-operator: ## Run in Operator mode against your current kube context
