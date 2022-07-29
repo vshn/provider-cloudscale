@@ -25,7 +25,6 @@ func (p *ObjectsUserPipeline) Update(ctx context.Context, mg resource.Managed) (
 			pipeline.If(hasSecretRef(user),
 				pipeline.NewStepFromFunc("ensure credentials secret", p.ensureCredentialsSecretFn(user)),
 			),
-			pipeline.NewStepFromFunc("emit event", p.emitDeletionEventFn(user)),
 		)
 	result := pipe.RunWithContext(ctx)
 

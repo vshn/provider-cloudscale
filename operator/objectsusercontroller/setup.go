@@ -12,13 +12,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-// +kubebuilder:rbac:groups=cloudscale.crossplane.io,resources=objectsusers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=cloudscale.crossplane.io,resources=objectsusers/status;objectsusers/finalizers,verbs=get;update;patch
-
-// +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=coordination.k8s.io,resources=leases,verbs=get;list;create;update
-// +kubebuilder:rbac:groups=core,resources=events,verbs=create
-
 // SetupController adds a controller that reconciles cloudscalev1.ObjectsUser managed resources.
 func SetupController(mgr ctrl.Manager) error {
 	name := strings.ToLower(cloudscalev1.ObjectsUserGroupKind)

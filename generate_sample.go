@@ -109,7 +109,7 @@ func newProviderConfigSample() *providerv1.ProviderConfig {
 				Source: xpv1.CredentialsSourceInjectedIdentity,
 				APITokenSecretRef: corev1.SecretReference{
 					Name:      "api-token",
-					Namespace: "provider-cloudscale-system",
+					Namespace: "crossplane-system",
 				},
 			},
 		},

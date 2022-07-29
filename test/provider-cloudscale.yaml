@@ -1,0 +1,12 @@
+---
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  labels:
+    name: provider-cloudscale
+  name: provider-cloudscale
+spec:
+  package: "" # patched
+  controllerConfigRef:
+    name: providerconfig-cloudscale
+  packagePullPolicy: Always

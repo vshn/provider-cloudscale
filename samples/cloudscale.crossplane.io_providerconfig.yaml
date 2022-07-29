@@ -7,6 +7,6 @@ spec:
   credentials:
     apiTokenSecretRef:
       name: api-token
-      namespace: provider-cloudscale-system
+      namespace: crossplane-system
     source: InjectedIdentity
 status: {}

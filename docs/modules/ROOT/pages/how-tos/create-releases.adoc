@@ -1,25 +1,13 @@
 = Create Releases
 
-This repository contains GitHub releases as well as Helm chart releases.
-They are using separate versioning scheme, each using SemVer.
-
-[IMPORTANT]
-====
-Any Pull Request _must_ clearly isolate code changes from Helm chart changes.
-Otherwise, there could be issues with the release automation and the generated changelog.
-====
-
-[NOTE]
-====
-Changes to the repository boilerplate, CI/CD or similar shall be considered as normal code change.
-====
+This repository contains GitHub releases.
 
 [TIP]
 ====
 The PR template reminds you how to separate and label PRs.
 ====
 
-== Operator Release
+== Provider Release
 
 Releasing a new version of the operator requires pushing a **new Git tag**, following the SemVer schema with a **`v` prefix**.
 Optionally, for prereleases they may contain a ascending release candidate suffix with `-rc#`.
@@ -34,41 +22,7 @@ Optionally, for prereleases they may contain a ascending release candidate suffi
 ====
 
 The changelog will be automatically created and is based on merged PRs.
-PRs that affect Helm charts are excluded.
 The following labels must exist on a PR to be included in the changelog:
 
 - `area:operator`
 - one of [`bug`, `enhancement`, `documentation`, `change`, `breaking`, `dependency`]
-
-Once the operator is released, consider creating another PR that updates the Helm chart with the newly-created release tag.
-
-== Helm Chart Release
-
-Releasing a new version of a Helm chart requires pushing a **new Git tag**, following the SemVer schema with a **chart name prefix**, for example `provider-cloudscale-1.2.3`.
-It's recommended to create a PR for each Helm chart change separately.
-After merging a PR for a Helm chart it's _not_ required to immediately release it.
-
-The PR should only contain changes in the `charts/` directory.
-Each affected chart _must_ set the version in `Chart.yaml` to the same as the Git tag, following SemVer.
-The chart README _must_ be generated using `make chart-docs` to ensure that the README is generated using special comments in `values.yaml`.
-
-.Possible Helm chart Git tags
-[example]
-====
-- `provider-cloudscale-1.2.3`
-====
-
-The changelog will be automatically created and is based on merged PRs.
-PRs that affect code changes are excluded.
-The following labels must exist on a PR to be included in the changelog:
-
-- `area:chart`
-- `chart:provider-cloudscale`
-- one of [`bug`, `enhancement`, `documentation`, `change`, `breaking`, `dependency`]
-
-If the Helm chart updates the image tag for the operator, it's recommended to set a title like `Update image tag to vx.y.z` or similar and set the `dependency` label.
-
-[NOTE]
-====
-Prereleases for Helm charts are currently not supported.
-====

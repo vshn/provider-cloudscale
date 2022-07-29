@@ -5,30 +5,45 @@ This tutorial goes through the steps required to get the operator up and running
 == Prerequisites
 
 * `kubectl`
-* `helm` v3
 * `yq`
 * A running Kubernetes cluster with cluster-admin permissions
 
 == Steps
 
-. Install chart `provider-cloudscale`
+. Install Crossplane chart
 +
 [source,bash,subs="attributes+"]
 ----
-helm repo add provider-cloudscale https://vshn.github.io/provider-cloudscale
+helm repo add crossplane https://charts.crossplane.io/stable
+helm upgrade --install crossplane crossplane/crossplane \
+  --create-namespace \
+  --namespace crossplane-system \
+  --set "args[1]='--enable-composition-revisions'" \
+  --wait
+----
+
+. Install `provider-cloudscale`
++
+[source,yaml,subs="attributes+"]
+----
+kubectl apply -f - <<EOF
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  labels:
+    name: provider-cloudscale
+  name: provider-cloudscale
+spec:
 ifeval::["{releaseVersion}" == "latest"]
-kubectl apply -f https://github.com/vshn/provider-cloudscale/releases/latest/download/crds.yaml
+  package: ghcr.io/vshn/provider-cloudscale/package:latest
 endif::[]
 ifeval::["{releaseVersion}" != "latest"]
-kubectl apply -f https://github.com/vshn/provider-cloudscale/releases/download/{releaseVersion}/crds.yaml
+  package: ghcr.io/vshn/provider-cloudscale/package:{releaseVersion}
 endif::[]
-helm upgrade --install provider-s3 provider-cloudscale/provider-cloudscale \
-  --create-namespace \
-  --namespace provider-cloudscale-system \
-  --wait
+EOF
 ----
 
 == Conclusion
 
-Now that you have the basic Operator running, it's time to get started with deploying resources.
+Now that you have the basic Provider running, it's time to get started with deploying resources.
 See xref:tutorials/getting-started.adoc[Tutorial: Getting Started] to get started.

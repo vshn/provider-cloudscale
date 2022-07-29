@@ -16,8 +16,6 @@ include Makefile.vars.mk
 -include docs/antora-preview.mk docs/antora-build.mk
 # Optional kind module
 -include kind/kind.mk
-# Chart-related
--include charts/charts.mk
 # Local Env & testing
 -include test/local.mk
 # Crossplane packaging
@@ -77,8 +75,13 @@ install-crd: generate kind-setup ## Install CRDs into cluster
 
 .PHONY: install-samples
 install-samples: export KUBECONFIG = $(KIND_KUBECONFIG)
-install-samples: generate-go install-crd ## Install samples into cluster
+install-samples: kind-setup ## Install samples into cluster
 	yq ./samples/*.yaml | kubectl apply -f -
+
+.PHONY: delete-samples
+delete-samples: export KUBECONFIG = $(KIND_KUBECONFIG)
+delete-samples: kind-setup
+	yq ./samples/*.yaml | kubectl delete --ignore-not-found --wait=false -f -
 
 .PHONY: run-operator
 run-operator: ## Run in Operator mode against your current kube context
@@ -88,7 +91,3 @@ run-operator: ## Run in Operator mode against your current kube context
 clean: kind-clean ## Cleans local build artifacts
 	rm -rf docs/node_modules $(docs_out_dir) dist .cache package/*.xpkg
 	$(DOCKER_CMD) rmi $(CONTAINER_IMG) || true
-
-.PHONY: release-prepare
-release-prepare: generate-go ## Prepares artifacts for releases
-	@yq package/crds/*.yaml > .github/crds.yaml
