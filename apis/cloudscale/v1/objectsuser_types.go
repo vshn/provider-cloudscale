@@ -76,15 +76,6 @@ func (in *ObjectsUser) GetDisplayName() string {
 	return in.Name
 }
 
-// GetProviderConfigName returns the name of the ProviderConfig.
-// Returns empty string if reference not given.
-func (in *ObjectsUser) GetProviderConfigName() string {
-	if ref := in.GetProviderConfigReference(); ref != nil {
-		return ref.Name
-	}
-	return ""
-}
-
 // +kubebuilder:object:root=true
 
 // ObjectsUserList contains a list of ObjectsUser

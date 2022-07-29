@@ -45,4 +45,4 @@ envtest_crd_dir ?= $(kind_dir)/crds
 .envtest_crds: .envtest_crd_dir
 
 $(kind_dir)/.credentials.yaml:
-	kubectl create secret generic --from-literal CLOUDSCALE_API_TOKEN=$(shell echo $$CLOUDSCALE_API_TOKEN) -o yaml --dry-run=client api-token > $@
+	kubectl create secret generic --from-literal CLOUDSCALE_API_TOKEN=$$CLOUDSCALE_API_TOKEN -o yaml --dry-run=client api-token > $@

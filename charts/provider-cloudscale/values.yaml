@@ -8,7 +8,7 @@ image:
   # -- Operator image registry
   registry: ghcr.io
   # -- Operator image repository
-  repository: vshn/provider-cloudscale
+  repository: vshn/provider-cloudscale/controller
   # -- Operator image pull policy
   # If set to empty, then Kubernetes default behaviour applies.
   pullPolicy: IfNotPresent
