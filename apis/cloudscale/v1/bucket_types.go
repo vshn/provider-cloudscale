@@ -56,8 +56,6 @@ type BucketSpec struct {
 type BucketObservation struct {
 	// BucketName is the name of the actual bucket.
 	BucketName string `json:"bucketName,omitempty"`
-	// Region is the region identifier of the actual bucket.
-	Region string `json:"region,omitempty"`
 }
 
 // BucketStatus represents the observed state of a Bucket.
@@ -76,6 +74,7 @@ type BucketStatus struct {
 // +kubebuilder:printcolumn:name="Region",type="string",JSONPath=".spec.forProvider.region"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,cloudscale}
+// +kubebuilder:webhook:verbs=create;update;delete,path=/validate-cloudscale-crossplane-io-v1-bucket,mutating=false,failurePolicy=fail,groups=cloudscale.crossplane.io,resources=buckets,versions=v1,name=buckets.cloudscale.crossplane.io,sideEffects=None,admissionReviewVersions=v1
 
 // Bucket is the API for creating S3 buckets.
 type Bucket struct {

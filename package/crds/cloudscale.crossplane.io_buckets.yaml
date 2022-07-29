@@ -289,9 +289,6 @@ spec:
                   bucketName:
                     description: BucketName is the name of the actual bucket.
                     type: string
-                  region:
-                    description: Region is the region identifier of the actual bucket.
-                    type: string
                 type: object
               conditions:
                 description: Conditions of the resource.

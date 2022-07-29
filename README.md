@@ -44,3 +44,16 @@ See all targets with `make help`
 1. Get an API token cloudscale.ch
 1. `export CLOUDSCALE_API_TOKEN=<the-token>`
 1. `make local-install install-samples`
+
+### Kubernetes Webhook Troubleshooting
+
+The provider comes with mutating and validation admission webhook server.
+However, in this setup this currently only works in the kind cluster when installed as package using `make local-install`.
+
+To test and troubleshoot the webhooks, do a port-forward and send an admission request sample of the spec:
+```bash
+# port-forward webhook server
+kubectl -n crossplane-system port-forward $(kubectl -n crossplane-system get pods -o name -l pkg.crossplane.io/provider=provider-cloudscale) 9443:9443
+# send an admission request
+curl -k -v -H "Content-Type: application/json" --data @samples/admission.k8s.io_admissionreview.json https://localhost:9443/validate-cloudscale-crossplane-io-v1-bucket
+```

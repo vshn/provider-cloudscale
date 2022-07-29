@@ -37,6 +37,7 @@ $(crossplane_sentinel): $(KIND_KUBECONFIG)
 		--namespace crossplane-system \
 		--set "args[0]='--debug'" \
 		--set "args[1]='--enable-composition-revisions'" \
+		--set webhooks.enabled=true \
 		--wait
 	@touch $@
 
