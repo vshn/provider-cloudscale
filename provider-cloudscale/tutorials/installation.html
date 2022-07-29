@@ -177,9 +177,6 @@
 <p><code>kubectl</code></p>
 </li>
 <li>
-<p><code>helm</code> v3</p>
-</li>
-<li>
 <p><code>yq</code></p>
 </li>
 <li>
@@ -195,15 +192,32 @@
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Install chart <code>provider-cloudscale</code></p>
+<p>Install Crossplane chart</p>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm repo add provider-cloudscale https://vshn.github.io/provider-cloudscale
-kubectl apply -f https://github.com/vshn/provider-cloudscale/releases/latest/download/crds.yaml
-helm upgrade --install provider-s3 provider-cloudscale/provider-cloudscale \
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm repo add crossplane https://charts.crossplane.io/stable
+helm upgrade --install crossplane crossplane/crossplane \
   --create-namespace \
-  --namespace provider-cloudscale-system \
+  --namespace crossplane-system \
+  --set "args[1]='--enable-composition-revisions'" \
   --wait</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Install <code>provider-cloudscale</code></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">kubectl apply -f - &lt;&lt;EOF
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  labels:
+    name: provider-cloudscale
+  name: provider-cloudscale
+spec:
+  package: ghcr.io/vshn/provider-cloudscale/package:latest
+EOF</code></pre>
 </div>
 </div>
 </li>
@@ -215,7 +229,7 @@ helm upgrade --install provider-s3 provider-cloudscale/provider-cloudscale \
 <h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Now that you have the basic Operator running, it&#8217;s time to get started with deploying resources.
+<p>Now that you have the basic Provider running, it&#8217;s time to get started with deploying resources.
 See <a href="getting-started.html" class="xref page">Tutorial: Getting Started</a> to get started.</p>
 </div>
 </div>
