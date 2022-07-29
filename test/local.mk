@@ -58,8 +58,8 @@ $(registry_sentinel): $(KIND_KUBECONFIG)
 
 .PHONY: kind-run-operator
 kind-run-operator: export KUBECONFIG = $(KIND_KUBECONFIG)
-kind-run-operator: kind-setup ## Run in Operator mode against kind cluster (you may also need `install-crd`)
-	go run . -v 1 operator
+kind-run-operator: kind-setup webhook-cert ## Run in Operator mode against kind cluster
+	go run . -v 1 operator --webhook-tls-cert-dir $(kind_dir)
 
 ###
 ### Integration Tests
@@ -82,3 +82,22 @@ envtest_crd_dir ?= $(kind_dir)/crds
 $(kind_dir)/.credentials.yaml:
 	@if [ "$$CLOUDSCALE_API_TOKEN" = "" ]; then echo "Environment variable CLOUDSCALE_API_TOKEN not set"; exit 1; fi
 	kubectl create secret generic --from-literal CLOUDSCALE_API_TOKEN=$$CLOUDSCALE_API_TOKEN -o yaml --dry-run=client api-token > $@
+
+###
+### Generate webhook certificates.
+### This is only relevant when running in IDE with debugger.
+### When installed as a provider, Crossplane handles the certificate generation.
+###
+
+webhook_key = $(kind_dir)/tls.key
+webhook_cert = $(kind_dir)/tls.crt
+webhook_service_name = provider-cloudscale.crossplane-system.svc
+
+.PHONY: webhook-cert
+webhook-cert: $(webhook_cert) ## Generate webhook certificates for out-of-cluster debugging in an IDE
+
+$(webhook_key):
+	openssl req -x509 -newkey rsa:4096 -nodes -keyout $@ --noout -days 3650 -subj "/CN=$(webhook_service_name)" -addext "subjectAltName = DNS:$(webhook_service_name)"
+
+$(webhook_cert): $(webhook_key)
+	openssl req -x509 -key $(webhook_key) -nodes -out $@ -days 3650 -subj "/CN=$(webhook_service_name)" -addext "subjectAltName = DNS:$(webhook_service_name)"

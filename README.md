@@ -48,12 +48,17 @@ See all targets with `make help`
 ### Kubernetes Webhook Troubleshooting
 
 The provider comes with mutating and validation admission webhook server.
-However, in this setup this currently only works in the kind cluster when installed as package using `make local-install`.
 
-To test and troubleshoot the webhooks, do a port-forward and send an admission request sample of the spec:
-```bash
-# port-forward webhook server
-kubectl -n crossplane-system port-forward $(kubectl -n crossplane-system get pods -o name -l pkg.crossplane.io/provider=provider-cloudscale) 9443:9443
-# send an admission request
-curl -k -v -H "Content-Type: application/json" --data @samples/admission.k8s.io_admissionreview.json https://localhost:9443/validate-cloudscale-crossplane-io-v1-bucket
-```
+To test and troubleshoot the webhooks on the cluster, simply apply your changes with `kubectl`.
+
+1.  To debug the webhook in an IDE, we need to generate certificates:
+    ```bash
+    make webhook-cert
+    ```
+2.  Start the operator in your IDE with `WEBHOOK_TLS_CERT_DIR` environment set to `.kind`.
+
+3.  Send an admission request sample of the spec:
+    ```bash
+    # send an admission request
+    curl -k -v -H "Content-Type: application/json" --data @samples/admission.k8s.io_admissionreview.json https://localhost:9443/validate-cloudscale-crossplane-io-v1-bucket
+    ```
