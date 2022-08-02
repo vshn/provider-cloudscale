@@ -1,0 +1,82 @@
+{
+  "kind": "AdmissionReview",
+  "apiVersion": "admission.k8s.io/v1",
+  "request": {
+    "uid": "",
+    "kind": {
+      "group": "cloudscale.crossplane.io",
+      "version": "v1",
+      "kind": "Bucket"
+    },
+    "resource": {
+      "group": "cloudscale.crossplane.io",
+      "version": "v1",
+      "resource": "Bucket"
+    },
+    "requestKind": {
+      "group": "cloudscale.crossplane.io",
+      "version": "v1",
+      "kind": "Bucket"
+    },
+    "requestResource": {
+      "group": "cloudscale.crossplane.io",
+      "version": "v1",
+      "resource": "Bucket"
+    },
+    "name": "bucket",
+    "operation": "UPDATE",
+    "userInfo": {
+      "username": "admin",
+      "groups": [
+        "system:authenticated"
+      ]
+    },
+    "object": {
+      "kind": "Bucket",
+      "apiVersion": "cloudscale.crossplane.io/v1",
+      "metadata": {
+        "name": "bucket",
+        "creationTimestamp": null
+      },
+      "spec": {
+        "forProvider": {
+          "credentialsSecretRef": {
+            "name": "my-cloudscale-user-credentials",
+            "namespace": "default"
+          },
+          "endpointURL": "objects.rma.cloudscale.ch",
+          "bucketName": "another",
+          "region": "rma"
+        }
+      },
+      "status": {
+        "atProvider": {}
+      }
+    },
+    "oldObject": {
+      "kind": "Bucket",
+      "apiVersion": "cloudscale.crossplane.io/v1",
+      "metadata": {
+        "name": "bucket",
+        "creationTimestamp": null
+      },
+      "spec": {
+        "forProvider": {
+          "credentialsSecretRef": {
+            "name": "my-cloudscale-user-credentials",
+            "namespace": "default"
+          },
+          "endpointURL": "objects.rma.cloudscale.ch",
+          "bucketName": "my-provider-test-bucket",
+          "region": "rma"
+        }
+      },
+      "status": {
+        "atProvider": {
+          "bucketName": "my-provider-test-bucket"
+        }
+      }
+    },
+    "options": null
+  }
+}

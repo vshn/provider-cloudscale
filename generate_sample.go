@@ -20,6 +20,8 @@ import (
 	"github.com/vshn/provider-cloudscale/apis"
 	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 	providerv1 "github.com/vshn/provider-cloudscale/apis/provider/v1"
+	admissionv1 "k8s.io/api/admission/v1"
+	authv1 "k8s.io/api/authentication/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -33,6 +35,7 @@ func main() {
 	generateCloudscaleObjectsUserSample()
 	generateBucketSample()
 	generateProviderConfigSample()
+	generateBucketAdmissionRequest()
 }
 
 func generateCloudscaleObjectsUserSample() {
@@ -114,6 +117,35 @@ func newProviderConfigSample() *providerv1.ProviderConfig {
 			},
 		},
 	}
+}
+
+// generateBucketAdmissionRequest generates an update request that will fail.
+func generateBucketAdmissionRequest() {
+	oldSpec := newBucketSample()
+	newSpec := newBucketSample()
+	newSpec.Spec.ForProvider.BucketName = "another"
+	oldSpec.Status.AtProvider.BucketName = oldSpec.Spec.ForProvider.BucketName
+
+	gvk := metav1.GroupVersionKind{Group: cloudscalev1.Group, Version: cloudscalev1.Version, Kind: cloudscalev1.BucketKind}
+	gvr := metav1.GroupVersionResource{Group: cloudscalev1.Group, Version: cloudscalev1.Version, Resource: cloudscalev1.BucketKind}
+	admission := &admissionv1.AdmissionReview{
+		TypeMeta: metav1.TypeMeta{APIVersion: "admission.k8s.io/v1", Kind: "AdmissionReview"},
+		Request: &admissionv1.AdmissionRequest{
+			Object:          runtime.RawExtension{Object: newSpec},
+			OldObject:       runtime.RawExtension{Object: oldSpec},
+			Kind:            gvk,
+			Resource:        gvr,
+			RequestKind:     &gvk,
+			RequestResource: &gvr,
+			Name:            oldSpec.Name,
+			Operation:       admissionv1.Update,
+			UserInfo: authv1.UserInfo{
+				Username: "admin",
+				Groups:   []string{"system:authenticated"},
+			},
+		},
+	}
+	serialize(admission, false)
 }
 
 func failIfError(err error) {

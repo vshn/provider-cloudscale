@@ -1,6 +1,7 @@
 package bucketcontroller
 
 import (
+	"strings"
 	"time"
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -33,4 +34,26 @@ func SetupController(mgr ctrl.Manager) error {
 		Named(name).
 		For(&cloudscalev1.Bucket{}).
 		Complete(r)
+}
+
+// SetupWebhook adds a webhook for Bucket managed resources.
+func SetupWebhook(mgr ctrl.Manager) error {
+	/*
+		Totally undocumented and hard-to-find feature is that the builder automatically registers the URL path for the webhook.
+		What's more, not even the tests in upstream controller-runtime reveal what this path is _actually_ going to look like.
+		So here's how the path is built (dots replaced with dash, lower-cased, single-form):
+		 /validate-<group>-<version>-<kind>
+		 /mutate-<group>-<version>-<kind>
+		Example:
+		 /validate-cloudscale-crossplane-io-v1-bucket
+		This path has to be given in the `//+kubebuilder:webhook:...` magic comment, see example:
+		 +kubebuilder:webhook:verbs=create;update;delete,path=/validate-cloudscale-crossplane-io-v1-bucket,mutating=false,failurePolicy=fail,groups=cloudscale.crossplane.io,resources=buckets,versions=v1alpha1,name=buckets.cloudscale.crossplane.io,sideEffects=None,admissionReviewVersions=v1
+		Pay special attention to the plural forms and correct versions!
+	*/
+	return ctrl.NewWebhookManagedBy(mgr).
+		For(&cloudscalev1.Bucket{}).
+		WithValidator(&BucketValidator{
+			log: mgr.GetLogger().WithName("webhook").WithName(strings.ToLower(cloudscalev1.BucketKind)),
+		}).
+		Complete()
 }

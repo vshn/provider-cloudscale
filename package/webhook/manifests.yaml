@@ -1,0 +1,26 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-cloudscale-crossplane-io-v1-bucket
+  failurePolicy: Fail
+  name: buckets.cloudscale.crossplane.io
+  rules:
+  - apiGroups:
+    - cloudscale.crossplane.io
+    apiVersions:
+    - v1
+    operations:
+    - UPDATE
+    resources:
+    - buckets
+  sideEffects: None

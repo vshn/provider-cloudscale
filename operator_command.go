@@ -17,6 +17,7 @@ import (
 
 type operatorCommand struct {
 	LeaderElectionEnabled bool
+	WebhookCertDir        string
 
 	manager    manager.Manager
 	kubeconfig *rest.Config
@@ -35,6 +36,10 @@ func newOperatorCommand() *cli.Command {
 			&cli.BoolFlag{Name: "leader-election-enabled", Value: false, EnvVars: envVars("LEADER_ELECTION_ENABLED"),
 				Usage:       "Use leader election for the controller manager.",
 				Destination: &command.LeaderElectionEnabled,
+			},
+			&cli.StringFlag{Name: "webhook-tls-cert-dir", EnvVars: []string{"WEBHOOK_TLS_CERT_DIR"}, // Env var is set by Crossplane
+				Usage:       "Directory containing the certificates for the webhook server. If empty, the webhook server is not started.",
+				Destination: &command.WebhookCertDir,
 			},
 		},
 	}
@@ -90,6 +95,14 @@ func (c *operatorCommand) execute(ctx *cli.Context) error {
 	p.AddStepFromFunc("setup controllers", func(ctx context.Context) error {
 		return operator.SetupControllers(c.manager)
 	})
+	p.AddStep(pipeline.ToStep("setup webhook server",
+		func(ctx context.Context) error {
+			ws := c.manager.GetWebhookServer()
+			ws.CertDir = c.WebhookCertDir
+			ws.TLSMinVersion = "1.3"
+			return operator.SetupWebhooks(c.manager)
+		},
+		pipeline.Bool(c.WebhookCertDir != "")))
 	p.AddStepFromFunc("run manager", func(ctx context.Context) error {
 		log.Info("Starting manager")
 		return c.manager.Start(ctx)
