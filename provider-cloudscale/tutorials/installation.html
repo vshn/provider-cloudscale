@@ -200,6 +200,7 @@ helm upgrade --install crossplane crossplane/crossplane \
   --create-namespace \
   --namespace crossplane-system \
   --set "args[1]='--enable-composition-revisions'" \
+  --set webhooks.enabled=true \
   --wait</code></pre>
 </div>
 </div>
