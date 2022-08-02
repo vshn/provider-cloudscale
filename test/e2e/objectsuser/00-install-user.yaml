@@ -1,0 +1,18 @@
+---
+apiVersion: cloudscale.crossplane.io/v1
+kind: ObjectsUser
+metadata:
+  annotations:
+    kuttl: '00-install'
+  name: e2e-test-objectsuser
+spec:
+  forProvider:
+    displayName: provider-cloudscale-e2e-test-kuttl
+    tags:
+      key: value
+  providerConfigRef:
+    name: provider-config
+  writeConnectionSecretToRef:
+    name: objectsuser-credentials
+    namespace: e2e-test
+---
