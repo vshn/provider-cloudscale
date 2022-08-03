@@ -10,3 +10,4 @@
   `bug`, `enhancement`, `documentation`, `change`, `breaking`, `dependency`
   as they show up in the changelog
 - [ ] Link this PR to related issues
+- [ ] I have run `make test-e2e` and e2e tests pass successfully
