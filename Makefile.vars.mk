@@ -15,7 +15,9 @@ IMG_TAG ?= latest
 CONTAINER_REGISTRY ?= ghcr.io
 # Image URL to use all building/pushing image targets
 CONTAINER_IMG ?= $(CONTAINER_REGISTRY)/$(PROJECT_OWNER)/$(PROJECT_NAME)/controller:$(IMG_TAG)
-PACKAGE_IMG ?= $(CONTAINER_REGISTRY)/$(PROJECT_OWNER)/$(PROJECT_NAME)/package:$(IMG_TAG)
+# Image URL for the package image.
+# Not documented "feature" of GitHub container registry: Don't name your image "package", otherwise you'll get "forbidden" error messages
+PACKAGE_IMG ?= $(CONTAINER_REGISTRY)/$(PROJECT_OWNER)/$(PROJECT_NAME)/provider:$(IMG_TAG)
 
 ## KIND:setup
 
