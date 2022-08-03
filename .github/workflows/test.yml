@@ -40,7 +40,7 @@ jobs:
       - name: Upload code coverage report to Code Climate
         uses: paambaati/codeclimate-action@v3.0.0
         env:
-          CC_TEST_REPORTER_ID: 5eaa1b131bec7ecd6bb59ae5e68980004e114b1ae81e2f1064fc30667c22b816
+          CC_TEST_REPORTER_ID: 02db308ae08e47bc7d06ae531da4a6a9eeca76bd03f53b2752ecd02bfe226c57
         with:
           coverageLocations: cover.out:gocov
           prefix: github.com/${{ github.repository }}
