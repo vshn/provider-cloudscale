@@ -75,7 +75,7 @@ install-crd: generate kind-setup ## Install CRDs into cluster
 
 .PHONY: install-samples
 install-samples: export KUBECONFIG = $(KIND_KUBECONFIG)
-install-samples: kind-setup ## Install samples into cluster
+install-samples: kind-setup provider-config ## Install samples into cluster
 	yq ./samples/*.yaml | kubectl apply -f -
 
 .PHONY: delete-samples

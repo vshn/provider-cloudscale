@@ -7,7 +7,7 @@ local-install: export KUBECONFIG = $(KIND_KUBECONFIG)
 local-install: export INTERNAL_PACKAGE_IMG = registry.registry-system.svc.cluster.local:5000/$(PROJECT_OWNER)/$(PROJECT_NAME)/package:$(IMG_TAG)
 # for package-push:
 local-install: PACKAGE_IMG = localhost:5000/$(PROJECT_OWNER)/$(PROJECT_NAME)/package:$(IMG_TAG)
-local-install: kind-load-image crossplane-setup registry-setup provider-config package-push  ## Install Operator in local cluster
+local-install: kind-load-image crossplane-setup registry-setup package-push  ## Install Operator in local cluster
 	yq e '.spec.metadata.annotations."local.dev/installed"="$(shell date)"' test/controllerconfig-cloudscale.yaml | kubectl apply -f -
 	yq e '.spec.package=strenv(INTERNAL_PACKAGE_IMG)' test/provider-cloudscale.yaml | kubectl apply -f -
 	kubectl wait --for condition=Healthy provider.pkg.crossplane.io/provider-cloudscale --timeout 60s
