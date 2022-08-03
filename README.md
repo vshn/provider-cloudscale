@@ -17,6 +17,8 @@ Documentation: https://vshn.github.io/provider-cloudscale/
 
 ## Local Development
 
+ℹ️ Some architecture design notes are also available in the documentation
+
 ### Requirements
 
 * `docker`
