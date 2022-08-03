@@ -10,7 +10,6 @@ builds:
   - linux
   goarm:
   - 8
-  binary: service-s3
 
 archives:
 - format: binary
