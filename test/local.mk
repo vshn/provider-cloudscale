@@ -112,15 +112,10 @@ $(webhook_cert): $(webhook_key)
 ### with KUTTL (https://kuttl.dev)
 ###
 
-kuttl_bin = $(kind_dir)/kuttl
-
-# Prepare binary
-# We need to set the Go arch since the binary is meant for the user's OS.
-$(kuttl_bin): export GOOS = $(shell go env GOOS)
-$(kuttl_bin): export GOARCH = $(shell go env GOARCH)
+kuttl_bin = $(GOPATH)/kubectl-kuttl
 $(kuttl_bin):
-	@mkdir -p $(kind_dir)
-	cd test/e2e && go build -o $@ github.com/kudobuilder/kuttl/cmd/kubectl-kuttl
+	go install github.com/kudobuilder/kuttl/cmd/kubectl-kuttl@latest
+
 
 test-e2e: export KUBECONFIG = $(KIND_KUBECONFIG)
 test-e2e: $(kuttl_bin) local-install provider-config ## E2E tests
