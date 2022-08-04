@@ -1,0 +1,29 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+---
+apiVersion: cloudscale.crossplane.io/v1
+kind: Bucket
+metadata:
+  annotations:
+    kuttl: '01-install'
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    bucketName: provider-cloudscale-e2e-test-kuttl
+    credentialsSecretRef:
+      name: objectsuser-credentials
+      namespace: e2e-test
+    endpointURL: objects.rma.cloudscale.ch
+    region: rma
+status:
+  atProvider:
+    bucketName: provider-cloudscale-e2e-test-kuttl
+  conditions:
+    - type: Ready
+      status: 'True'
+      reason: Available
+    - type: Synced
+      status: 'True'
+      reason: ReconcileSuccess
+---

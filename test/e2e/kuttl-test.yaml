@@ -1,0 +1,6 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestSuite
+testDirs:
+  - ./test/e2e
+namespace: e2e-test
+timeout: 60 # some tests require more than 30s

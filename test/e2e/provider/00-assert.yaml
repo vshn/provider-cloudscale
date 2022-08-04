@@ -1,0 +1,33 @@
+---
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+---
+apiVersion: cloudscale.crossplane.io/v1
+kind: ObjectsUser
+metadata:
+  annotations:
+    kuttl: '00-install'
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    displayName: provider-cloudscale-e2e-test-kuttl
+    tags:
+      key: value
+  providerConfigRef:
+    name: provider-config
+  writeConnectionSecretToRef:
+    name: objectsuser-credentials
+    namespace: e2e-test
+status:
+  atProvider:
+    displayName: provider-cloudscale-e2e-test-kuttl
+    tags:
+      key: value
+  conditions:
+    - type: Ready
+      status: 'True'
+      reason: Available
+    - type: Synced
+      status: 'True'
+      reason: ReconcileSuccess
+---

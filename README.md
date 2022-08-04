@@ -38,6 +38,7 @@ Some other requirements (e.g. `kind`) will be compiled on-the-fly and put in the
 * `make local-install` to install the operator in local cluster
 * `make install-samples` to run the provider in local cluster and apply sample manifests
 * `make run-operator` to run the code in operator mode against your current kubecontext
+* `make test-e2e` to run e2e tests with kuttl
 
 See all targets with `make help`
 

@@ -1,30 +1,17 @@
 crossplane_sentinel = $(kind_dir)/crossplane_sentinel
 registry_sentinel = $(kind_dir)/registry_sentinel
 
-setup_envtest_bin = $(kind_dir)/setup-envtest
-
-# Prepare binary
-# We need to set the Go arch since the binary is meant for the user's OS.
-$(setup_envtest_bin): export GOOS = $(shell go env GOOS)
-$(setup_envtest_bin): export GOARCH = $(shell go env GOARCH)
-$(setup_envtest_bin):
-	@mkdir -p $(kind_dir)
-	cd test && go build -o $@ sigs.k8s.io/controller-runtime/tools/setup-envtest
-	$@ $(ENVTEST_ADDITIONAL_FLAGS) use '$(ENVTEST_K8S_VERSION)!'
-	chmod -R +w $(kind_dir)/k8s
-
 .PHONY: local-install
 local-install: export KUBECONFIG = $(KIND_KUBECONFIG)
 # for ControllerConfig:
 local-install: export INTERNAL_PACKAGE_IMG = registry.registry-system.svc.cluster.local:5000/$(PROJECT_OWNER)/$(PROJECT_NAME)/package:$(IMG_TAG)
 # for package-push:
 local-install: PACKAGE_IMG = localhost:5000/$(PROJECT_OWNER)/$(PROJECT_NAME)/package:$(IMG_TAG)
-local-install: kind-load-image crossplane-setup registry-setup $(kind_dir)/.credentials.yaml package-push  ## Install Operator in local cluster
+local-install: kind-load-image crossplane-setup registry-setup package-push  ## Install Operator in local cluster
 	yq e '.spec.metadata.annotations."local.dev/installed"="$(shell date)"' test/controllerconfig-cloudscale.yaml | kubectl apply -f -
 	yq e '.spec.package=strenv(INTERNAL_PACKAGE_IMG)' test/provider-cloudscale.yaml | kubectl apply -f -
 	kubectl wait --for condition=Healthy provider.pkg.crossplane.io/provider-cloudscale --timeout 60s
 	kubectl -n crossplane-system wait --for condition=Ready $$(kubectl -n crossplane-system get pods -o name -l pkg.crossplane.io/provider=provider-cloudscale) --timeout 60s
-	kubectl apply -n crossplane-system -f $(kind_dir)/.credentials.yaml
 
 .PHONY: crossplane-setup
 crossplane-setup: $(crossplane_sentinel) ## Installs Crossplane in kind cluster.
@@ -56,14 +43,30 @@ $(registry_sentinel): $(KIND_KUBECONFIG)
 		--wait
 	@touch $@
 
-.PHONY: kind-run-operator
-kind-run-operator: export KUBECONFIG = $(KIND_KUBECONFIG)
-kind-run-operator: kind-setup webhook-cert ## Run in Operator mode against kind cluster
-	go run . -v 1 operator --webhook-tls-cert-dir $(kind_dir)
+$(kind_dir)/.credentials.yaml:
+	@if [ "$$CLOUDSCALE_API_TOKEN" = "" ]; then echo "Environment variable CLOUDSCALE_API_TOKEN not set"; exit 1; fi
+	kubectl create secret generic --from-literal CLOUDSCALE_API_TOKEN=$$CLOUDSCALE_API_TOKEN -o yaml --dry-run=client api-token > $@
+
+.PHONY: provider-config
+provider-config: export KUBECONFIG = $(KIND_KUBECONFIG)
+provider-config: $(KIND_KUBECONFIG) $(kind_dir)/.credentials.yaml
+	kubectl apply -n crossplane-system -f $(kind_dir)/.credentials.yaml -f samples/cloudscale.crossplane.io_providerconfig.yaml
 
 ###
 ### Integration Tests
 ###
+
+setup_envtest_bin = $(kind_dir)/setup-envtest
+
+# Prepare binary
+# We need to set the Go arch since the binary is meant for the user's OS.
+$(setup_envtest_bin): export GOOS = $(shell go env GOOS)
+$(setup_envtest_bin): export GOARCH = $(shell go env GOARCH)
+$(setup_envtest_bin):
+	@mkdir -p $(kind_dir)
+	cd test && go build -o $@ sigs.k8s.io/controller-runtime/tools/setup-envtest
+	$@ $(ENVTEST_ADDITIONAL_FLAGS) use '$(ENVTEST_K8S_VERSION)!'
+	chmod -R +w $(kind_dir)/k8s
 
 .PHONY: test-integration
 test-integration: export ENVTEST_CRD_DIR = $(shell realpath $(envtest_crd_dir))
@@ -79,20 +82,22 @@ envtest_crd_dir ?= $(kind_dir)/crds
 
 .envtest_crds: .envtest_crd_dir
 
-$(kind_dir)/.credentials.yaml:
-	@if [ "$$CLOUDSCALE_API_TOKEN" = "" ]; then echo "Environment variable CLOUDSCALE_API_TOKEN not set"; exit 1; fi
-	kubectl create secret generic --from-literal CLOUDSCALE_API_TOKEN=$$CLOUDSCALE_API_TOKEN -o yaml --dry-run=client api-token > $@
+###
+### Local debugging
+###
 
-###
-### Generate webhook certificates.
-### This is only relevant when running in IDE with debugger.
-### When installed as a provider, Crossplane handles the certificate generation.
-###
+.PHONY: kind-run-operator
+kind-run-operator: export KUBECONFIG = $(KIND_KUBECONFIG)
+kind-run-operator: kind-setup webhook-cert ## Run in Operator mode against kind cluster
+	go run . -v 1 operator --webhook-tls-cert-dir $(kind_dir)
 
 webhook_key = $(kind_dir)/tls.key
 webhook_cert = $(kind_dir)/tls.crt
 webhook_service_name = provider-cloudscale.crossplane-system.svc
 
+# Generate webhook certificates.
+# This is only relevant when running in IDE with debugger.
+# When installed as a provider, Crossplane handles the certificate generation.
 .PHONY: webhook-cert
 webhook-cert: $(webhook_cert) ## Generate webhook certificates for out-of-cluster debugging in an IDE
 
@@ -101,3 +106,25 @@ $(webhook_key):
 
 $(webhook_cert): $(webhook_key)
 	openssl req -x509 -key $(webhook_key) -nodes -out $@ -days 3650 -subj "/CN=$(webhook_service_name)" -addext "subjectAltName = DNS:$(webhook_service_name)"
+
+###
+### E2E Tests
+### with KUTTL (https://kuttl.dev)
+###
+
+kuttl_bin = $(kind_dir)/kuttl
+
+# Prepare binary
+# We need to set the Go arch since the binary is meant for the user's OS.
+$(kuttl_bin): export GOOS = $(shell go env GOOS)
+$(kuttl_bin): export GOARCH = $(shell go env GOARCH)
+$(kuttl_bin):
+	@mkdir -p $(kind_dir)
+	cd test/e2e && go build -o $@ github.com/kudobuilder/kuttl/cmd/kubectl-kuttl
+
+test-e2e: export KUBECONFIG = $(KIND_KUBECONFIG)
+test-e2e: $(kuttl_bin) local-install provider-config ## E2E tests
+	kubectl create ns --save-config e2e-test --dry-run=client -o yaml | kubectl apply -f -
+	$(kuttl_bin) test ./test/e2e --config ./test/e2e/kuttl-test.yaml
+	@rm kubeconfig
+# kuttle leaves kubeconfig garbage: https://github.com/kudobuilder/kuttl/issues/297

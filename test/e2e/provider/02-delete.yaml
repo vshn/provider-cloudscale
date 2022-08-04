@@ -1,0 +1,10 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+delete:
+# This will wait until resources are really gone
+  - apiVersion: cloudscale.crossplane.io/v1
+    kind: Bucket
+    name: e2e-test-bucket
+  - apiVersion: cloudscale.crossplane.io/v1
+    kind: ObjectsUser
+    name: e2e-test-objectsuser
