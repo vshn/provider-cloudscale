@@ -5,6 +5,7 @@ metadata:
   name: bucket
 spec:
   forProvider:
+    bucketDeletionPolicy: DeleteAll
     bucketName: my-provider-test-bucket
     credentialsSecretRef:
       name: my-cloudscale-user-credentials

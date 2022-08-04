@@ -91,9 +91,10 @@ func newBucketSample() *cloudscalev1.Bucket {
 					Name:      "my-cloudscale-user-credentials",
 					Namespace: "default",
 				},
-				EndpointURL: "objects.rma.cloudscale.ch",
-				BucketName:  "my-provider-test-bucket",
-				Region:      "rma",
+				EndpointURL:          "objects.rma.cloudscale.ch",
+				BucketName:           "my-provider-test-bucket",
+				Region:               "rma",
+				BucketDeletionPolicy: cloudscalev1.DeleteAll,
 			},
 		},
 	}
