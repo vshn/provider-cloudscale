@@ -208,9 +208,6 @@
 <p><code>kubectl</code></p>
 </li>
 <li>
-<p><code>yq</code></p>
-</li>
-<li>
 <p>A running Kubernetes cluster with cluster-admin permissions</p>
 </li>
 </ul>
@@ -230,7 +227,7 @@
 helm upgrade --install crossplane crossplane/crossplane \
   --create-namespace \
   --namespace crossplane-system \
-  --set "args[1]='--enable-composition-revisions'" \
+  --set "args[0]='--enable-composition-revisions'" \
   --set webhooks.enabled=true \
   --wait</code></pre>
 </div>
@@ -248,7 +245,7 @@ metadata:
     name: provider-cloudscale
   name: provider-cloudscale
 spec:
-  package: ghcr.io/vshn/provider-cloudscale/package:latest
+  package: ghcr.io/vshn/provider-cloudscale/provider:latest
 EOF</code></pre>
 </div>
 </div>

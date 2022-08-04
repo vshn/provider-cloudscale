@@ -211,7 +211,10 @@
 <p>Already running Kubernetes cluster</p>
 </li>
 <li>
-<p>Installed Operator</p>
+<p>Installed Operator (as a Crossplane Provider)</p>
+</li>
+<li>
+<p>An API token for cloudscale.ch with write permissions</p>
 </li>
 </ul>
 </div>
@@ -223,11 +226,54 @@
 <div class="olist arabic">
 <ol class="arabic">
 <li>
+<p>Export your API token</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">export CLOUDSCALE_API_TOKEN=&lt;the-token&gt;</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Create a <code>Secret</code> with the token</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">kubectl apply -f - &lt;&lt;EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api-token
+  namespace: crossplane-system
+stringData:
+  CLOUDSCALE_API_TOKEN: "$CLOUDSCALE_API_TOKEN"
+EOF</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p>Create a <code>ProviderConfig</code></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">kubectl apply -f - &lt;&lt;EOF
+apiVersion: cloudscale.crossplane.io/v1
+kind: ProviderConfig
+metadata:
+  name: provider-config
+spec:
+  credentials:
+    apiTokenSecretRef:
+      name: api-token
+      namespace: crossplane-system
+    source: InjectedIdentity
+EOF</code></pre>
+</div>
+</div>
+</li>
+<li>
 <p>Create a file with the spec</p>
 <div class="listingblock">
-<div class="title">objectsuser.yaml</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">apiVersion: cloudscale.crossplane.io/v1
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">cat - &gt; objectsuser.yaml &lt;&lt;EOF
+apiVersion: cloudscale.crossplane.io/v1
 kind: ObjectsUser
 metadata:
   name: my-cloudscale-user
@@ -239,7 +285,8 @@ spec:
     name: provider-config
   writeConnectionSecretToRef:
     name: my-cloudscale-user-credentials
-    namespace: default</code></pre>
+    namespace: default
+EOF</code></pre>
 </div>
 </div>
 </li>
@@ -258,18 +305,6 @@ spec:
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl wait --for condition=Ready objectsuser/my-cloudscale-user</code></pre>
 </div>
 </div>
-<div class="admonitionblock tip">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
-</td>
-<td class="content">
-When the instance is ready, there should be a credential <code>Secret</code> created in the same namespace as <code>my-cloudscale-user</code>.
-</td>
-</tr>
-</table>
-</div>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -279,7 +314,7 @@ When the instance is ready, there should be a credential <code>Secret</code> cre
 <td class="content">
 <div class="paragraph">
 <p>If you already have a <code>Secret</code> named <code>my-cloudscale-user-credentials</code>, it will get overwritten.
-Set <code>spec.secretRef</code> to another name.</p>
+Set <code>spec.writeConnectionSecretToRef.name</code> to another name.</p>
 </div>
 </td>
 </tr>
@@ -293,6 +328,11 @@ Set <code>spec.secretRef</code> to another name.</p>
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl get secret my-cloudscale-user-credentials -o yaml</code></pre>
 </div>
 </div>
+</li>
+<li>
+<p><em>(Optional):</em> Change the spec.
+You can edit <code>objectsuser.yaml</code> to modify tags or change the displayname before applying the manifest again.
+The provider should update the objects user on cloudscale.ch as a consequence.</p>
 </li>
 </ol>
 </div>
