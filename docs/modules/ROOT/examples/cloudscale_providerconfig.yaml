@@ -1,0 +1,10 @@
+apiVersion: cloudscale.crossplane.io/v1
+kind: ProviderConfig
+metadata:
+  name: provider-config
+spec:
+  credentials:
+    apiTokenSecretRef:
+      name: api-token
+      namespace: crossplane-system
+    source: InjectedIdentity

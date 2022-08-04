@@ -5,7 +5,6 @@ This tutorial goes through the steps required to get the operator up and running
 == Prerequisites
 
 * `kubectl`
-* `yq`
 * A running Kubernetes cluster with cluster-admin permissions
 
 == Steps
@@ -18,7 +17,7 @@ helm repo add crossplane https://charts.crossplane.io/stable
 helm upgrade --install crossplane crossplane/crossplane \
   --create-namespace \
   --namespace crossplane-system \
-  --set "args[1]='--enable-composition-revisions'" \
+  --set "args[0]='--enable-composition-revisions'" \
   --set webhooks.enabled=true \
   --wait
 ----
@@ -36,10 +35,10 @@ metadata:
   name: provider-cloudscale
 spec:
 ifeval::["{releaseVersion}" == "latest"]
-  package: ghcr.io/vshn/provider-cloudscale/package:latest
+  package: ghcr.io/vshn/provider-cloudscale/provider:latest
 endif::[]
 ifeval::["{releaseVersion}" != "latest"]
-  package: ghcr.io/vshn/provider-cloudscale/package:{releaseVersion}
+  package: ghcr.io/vshn/provider-cloudscale/provider:{releaseVersion}
 endif::[]
 EOF
 ----

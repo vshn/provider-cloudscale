@@ -6,16 +6,43 @@ This page describes how to create a new S3 bucket after you have installed the o
 
 * `kubectl`
 * Already running Kubernetes cluster
-* Installed Operator
+* Installed Operator (as a Crossplane Provider)
+* An API token for cloudscale.ch with write permissions
 
 == Steps
 
-. Create a file with the spec
+. Export your API token
 +
-.objectsuser.yaml
+[source,bash]
+----
+export CLOUDSCALE_API_TOKEN=<the-token>
+----
+
+. Create a `Secret` with the token
++
 [source,yaml]
 ----
+kubectl apply -f - <<EOF
+include::example$api-token-secret.yaml[]
+EOF
+----
+
+. Create a `ProviderConfig`
++
+[source,yaml]
+----
+kubectl apply -f - <<EOF
+include::example$cloudscale_providerconfig.yaml[]
+EOF
+----
+
+. Create a file with the spec
++
+[source,yaml]
+----
+cat - > objectsuser.yaml <<EOF
 include::example$cloudscale_objectsuser.yaml[]
+EOF
 ----
 
 . Apply the spec in the cluster
@@ -32,12 +59,10 @@ kubectl apply -f objectsuser.yaml
 kubectl wait --for condition=Ready objectsuser/my-cloudscale-user
 ----
 +
-TIP: When the instance is ready, there should be a credential `Secret` created in the same namespace as `my-cloudscale-user`.
-+
 [NOTE]
 ====
 If you already have a `Secret` named `my-cloudscale-user-credentials`, it will get overwritten.
-Set `spec.secretRef` to another name.
+Set `spec.writeConnectionSecretToRef.name` to another name.
 ====
 
 . Inspect the credential `Secret`
@@ -46,3 +71,7 @@ Set `spec.secretRef` to another name.
 ----
 kubectl get secret my-cloudscale-user-credentials -o yaml
 ----
+
+. _(Optional):_ Change the spec.
+  You can edit `objectsuser.yaml` to modify tags or change the displayname before applying the manifest again.
+  The provider should update the objects user on cloudscale.ch as a consequence.
