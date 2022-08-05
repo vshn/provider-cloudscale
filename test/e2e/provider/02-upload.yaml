@@ -2,5 +2,5 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
   # note: working dir is the where the yaml files are
-  # Args: $endpoint $bucket $file_path $secret_name $namespace
-  - command: ../upload-object.sh objects.rma.cloudscale.ch provider-cloudscale-e2e-test-kuttl ../../../README.md objectsuser-credentials e2e-test
+  # Args: $endpoint $bucket $file_path $secret_name
+  - command: ../upload-object.sh objects.rma.cloudscale.ch provider-cloudscale-e2e-test-kuttl ../../../README.md objectsuser-credentials-e2e-test-kuttl
