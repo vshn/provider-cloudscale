@@ -46,7 +46,8 @@
           },
           "endpointURL": "objects.rma.cloudscale.ch",
           "bucketName": "another",
-          "region": "rma"
+          "region": "rma",
+          "bucketDeletionPolicy": "DeleteAll"
         }
       },
       "status": {
@@ -68,7 +69,8 @@
           },
           "endpointURL": "objects.rma.cloudscale.ch",
           "bucketName": "my-provider-test-bucket",
-          "region": "rma"
+          "region": "rma",
+          "bucketDeletionPolicy": "DeleteAll"
         }
       },
       "status": {

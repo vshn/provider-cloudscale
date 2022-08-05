@@ -16,6 +16,16 @@ const (
 	SecretAccessKeyName = "AWS_SECRET_ACCESS_KEY"
 )
 
+const (
+	// DeleteIfEmpty only deletes the bucket if the bucket is empty.
+	DeleteIfEmpty BucketDeletionPolicy = "DeleteIfEmpty"
+	// DeleteAll recursively deletes all objects in the bucket and then removes it.
+	DeleteAll BucketDeletionPolicy = "DeleteAll"
+)
+
+// BucketDeletionPolicy determines how buckets should be deleted when a Bucket is deleted.
+type BucketDeletionPolicy string
+
 // BucketParameters are the configurable fields of a Bucket.
 type BucketParameters struct {
 	// +kubebuilder:validation:Required
@@ -44,6 +54,15 @@ type BucketParameters struct {
 	// The region must be available in the S3 endpoint.
 	// Cannot be changed after bucket is created.
 	Region string `json:"region"`
+
+	// +kubebuilder:validation:Enum=DeleteIfEmpty;DeleteAll
+	// +kubebuilder:default="DeleteIfEmpty"
+
+	// BucketDeletionPolicy determines how buckets should be deleted when Bucket is deleted.
+	//  `DeleteIfEmpty` only deletes the bucket if the bucket is empty.
+	//  `DeleteAll` recursively deletes all objects in the bucket and then removes it.
+	// To skip deletion of the bucket (orphan it) set `spec.deletionPolicy=Orphan`.
+	BucketDeletionPolicy BucketDeletionPolicy `json:"bucketDeletionPolicy,omitempty"`
 }
 
 // BucketSpec defines the desired state of a Bucket.

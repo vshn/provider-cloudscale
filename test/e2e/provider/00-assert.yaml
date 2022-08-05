@@ -16,8 +16,8 @@ spec:
   providerConfigRef:
     name: provider-config
   writeConnectionSecretToRef:
-    name: objectsuser-credentials
-    namespace: e2e-test
+    name: objectsuser-credentials-e2e-test-kuttl
+    namespace: default
 status:
   atProvider:
     displayName: provider-cloudscale-e2e-test-kuttl
@@ -31,3 +31,10 @@ status:
       status: 'True'
       reason: ReconcileSuccess
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: objectsuser-credentials-e2e-test-kuttl
+  ownerReferences:
+    - name: e2e-test-objectsuser
+      kind: ObjectsUser

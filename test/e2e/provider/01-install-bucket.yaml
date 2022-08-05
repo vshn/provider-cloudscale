@@ -8,9 +8,10 @@ metadata:
 spec:
   forProvider:
     bucketName: provider-cloudscale-e2e-test-kuttl
+    bucketDeletionPolicy: DeleteAll
     credentialsSecretRef:
-      name: objectsuser-credentials
-      namespace: e2e-test
+      name: objectsuser-credentials-e2e-test-kuttl
+      namespace: default
     endpointURL: objects.rma.cloudscale.ch
     region: rma
 ---
