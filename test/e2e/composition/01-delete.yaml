@@ -1,0 +1,7 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+delete:
+  - apiVersion: appcat.vshn.io/v1
+    kind: ObjectBucket
+    name: bucket
+    namespace: default

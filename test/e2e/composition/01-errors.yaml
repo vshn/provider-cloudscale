@@ -1,0 +1,12 @@
+---
+apiVersion: cloudscale.crossplane.io/v1
+kind: ObjectsUser
+metadata:
+  annotations:
+    kuttl: '00-install'
+---
+apiVersion: cloudscale.crossplane.io/v1
+kind: Bucket
+metadata:
+  annotations:
+    kuttl: '00-install'

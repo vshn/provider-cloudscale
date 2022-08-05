@@ -1,0 +1,59 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 30
+---
+apiVersion: cloudscale.crossplane.io/v1
+kind: ObjectsUser
+metadata:
+  annotations:
+    kuttl: '00-install'
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    displayName: default.bucket
+    tags:
+      namespace: default
+      tenant: my-org
+      zone: local-dev-kind
+  providerConfigRef:
+    name: provider-config
+  writeConnectionSecretToRef:
+    namespace: provider-cloudscale-secrets
+status:
+  atProvider:
+    displayName: default.bucket
+    tags:
+      namespace: default
+      tenant: my-org
+      zone: local-dev-kind
+  conditions:
+    - reason: Available
+      status: 'True'
+      type: Ready
+    - reason: ReconcileSuccess
+      status: 'True'
+      type: Synced
+---
+apiVersion: cloudscale.crossplane.io/v1
+kind: Bucket
+metadata:
+  annotations:
+    kuttl: '00-install'
+spec:
+  deletionPolicy: Delete
+  forProvider:
+    bucketName: my-provider-cloudscale-composition-e2e-test
+    credentialsSecretRef:
+      namespace: provider-cloudscale-secrets
+    endpointURL: objects.rma.cloudscale.ch
+    region: rma
+status:
+  atProvider:
+    bucketName: my-provider-cloudscale-composition-e2e-test
+  conditions:
+    - reason: ReconcileSuccess
+      status: 'True'
+      type: Synced
+    - reason: Available
+      status: 'True'
+      type: Ready

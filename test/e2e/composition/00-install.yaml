@@ -1,0 +1,13 @@
+apiVersion: appcat.vshn.io/v1
+kind: ObjectBucket
+metadata:
+  annotations:
+    kuttl: '00-install'
+  name: bucket
+  namespace: default
+spec:
+  parameters:
+    bucketName: my-provider-cloudscale-composition-e2e-test
+    region: rma
+  writeConnectionSecretToRef:
+    name: bucket-credentials-e2e-test
