@@ -56,31 +56,33 @@ provider-config: $(KIND_KUBECONFIG) $(kind_dir)/.credentials.yaml
 ### Integration Tests
 ###
 
-setup_envtest_bin = $(kind_dir)/setup-envtest
+setup_envtest_bin = $(GOPATH)/bin/setup-envtest
+envtest_crd_dir ?= $(kind_dir)/crds
 
 # Prepare binary
 # We need to set the Go arch since the binary is meant for the user's OS.
 $(setup_envtest_bin): export GOOS = $(shell go env GOOS)
 $(setup_envtest_bin): export GOARCH = $(shell go env GOARCH)
 $(setup_envtest_bin):
-	@mkdir -p $(kind_dir)
-	cd test && go build -o $@ sigs.k8s.io/controller-runtime/tools/setup-envtest
-	$@ $(ENVTEST_ADDITIONAL_FLAGS) use '$(ENVTEST_K8S_VERSION)!'
-	chmod -R +w $(kind_dir)/k8s
+	go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 .PHONY: test-integration
-test-integration: export ENVTEST_CRD_DIR = $(shell realpath $(envtest_crd_dir))
+test-integration: export ENVTEST_CRD_DIR = $(envtest_crd_dir)
 test-integration: $(setup_envtest_bin) .envtest_crds ## Run integration tests against code
+	$(setup_envtest_bin) $(ENVTEST_ADDITIONAL_FLAGS) use '$(ENVTEST_K8S_VERSION)!'
+	chmod -R +w $(kind_dir)/k8s
 	export KUBEBUILDER_ASSETS="$$($(setup_envtest_bin) $(ENVTEST_ADDITIONAL_FLAGS) use -i -p path '$(ENVTEST_K8S_VERSION)!')" && \
 	go test -tags=integration -coverprofile cover.out -covermode atomic ./...
-
-envtest_crd_dir ?= $(kind_dir)/crds
 
 .envtest_crd_dir:
 	@mkdir -p $(envtest_crd_dir)
 	@cp -r package/crds $(kind_dir)
 
 .envtest_crds: .envtest_crd_dir
+
+.PHONY: .envtest-clean
+.envtest-clean:
+	rm -f $(setup_envtest_bin)
 
 ###
 ### Local debugging
@@ -125,3 +127,7 @@ test-e2e: $(kuttl_bin) $(mc_bin) local-install provider-config ## E2E tests
 	$(kuttl_bin) test ./test/e2e --config ./test/e2e/kuttl-test.yaml
 	@rm -f kubeconfig
 # kuttle leaves kubeconfig garbage: https://github.com/kudobuilder/kuttl/issues/297
+
+.PHONY: .e2e-test-clean
+.e2e-test-clean:
+	rm -f $(kuttl_bin) $(mc_bin)
