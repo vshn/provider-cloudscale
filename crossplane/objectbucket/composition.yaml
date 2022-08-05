@@ -1,0 +1,142 @@
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: objectbucket-cloudscale
+spec:
+  compositeTypeRef:
+    apiVersion: appcat.vshn.io/v1
+    kind: XObjectBucket
+  writeConnectionSecretsToNamespace: crossplane-system
+  patchSets:
+    - name: annotations
+      patches:
+      - type: FromCompositeFieldPath
+        fromFieldPath: metadata.annotations
+    - name: labels
+      patches:
+      - type: FromCompositeFieldPath
+        fromFieldPath: metadata.labels
+  resources:
+
+    - base:
+        apiVersion: kubernetes.crossplane.io/v1alpha1
+        kind: Object
+        spec:
+          managementPolicy: Observe
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: '' # patched
+          providerConfigRef:
+            name: provider-config
+      patches:
+        # set which namespace to observe
+        - fromFieldPath: metadata.labels[crossplane.io/claim-namespace]
+          toFieldPath: spec.forProvider.manifest.metadata.name
+        # copy the appuio organization label to a label on the XR
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.manifest.metadata.labels[appuio.io/organization]
+          toFieldPath: metadata.labels[appuio.io/organization]
+        # append suffix to the observer name
+        - fromFieldPath: metadata.labels[crossplane.io/composite]
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-ns-observer"
+
+    - base:
+        apiVersion: cloudscale.crossplane.io/v1
+        kind: ObjectsUser
+        metadata:
+          name: ""
+        spec:
+          forProvider:
+            displayName: "" # patched
+            tags:
+              zone: local-dev-kind
+              namespace: # patched
+              tenant: # patched
+          writeConnectionSecretToRef:
+            name: ""
+            namespace: provider-cloudscale-secrets
+          providerConfigRef:
+            name: provider-config
+      connectionDetails:
+        - fromConnectionSecretKey: AWS_ACCESS_KEY_ID
+          type: FromConnectionSecretKey
+          name: AWS_ACCESS_KEY_ID
+        - fromConnectionSecretKey: AWS_SECRET_ACCESS_KEY
+          type: FromConnectionSecretKey
+          name: AWS_SECRET_ACCESS_KEY
+      patches:
+        - type: PatchSet
+          patchSetName: annotations
+        - type: PatchSet
+          patchSetName: labels
+        - type: FromCompositeFieldPath
+          fromFieldPath: metadata.labels[crossplane.io/composite]
+          toFieldPath: metadata.name
+        - fromFieldPath: metadata.labels[crossplane.io/composite]
+          toFieldPath: spec.writeConnectionSecretToRef.name
+        # Set display name
+        - type: CombineFromComposite
+          toFieldPath: spec.forProvider.displayName
+          combine:
+            variables:
+              - fromFieldPath: metadata.labels[crossplane.io/claim-namespace]
+              - fromFieldPath: metadata.labels[crossplane.io/claim-name]
+            strategy: string
+            string:
+              fmt: "%s.%s"
+        # Set tenant tag
+        - type: FromCompositeFieldPath
+          fromFieldPath: metadata.labels[appuio.io/organization]
+          toFieldPath: spec.forProvider.tags.tenant
+        # Set namespace tag
+        - type: FromCompositeFieldPath
+          fromFieldPath: metadata.labels[crossplane.io/claim-namespace]
+          toFieldPath: spec.forProvider.tags.namespace
+
+    - base:
+        apiVersion: cloudscale.crossplane.io/v1
+        kind: Bucket
+        metadata:
+          name: ""
+        spec:
+          forProvider:
+            bucketName: ""
+            # Note: We cannot use the connection Secret that is created by Crossplane (it has a name that matches the metadata.uid)
+            # Reason: Upon deleting a claim, the connection secret gets deleted already, without it we can't delete the bucket and we'd be stuck.
+            # That is why we need a duplicate secret that the provider-cloudscale manages (and not crossplane).
+            credentialsSecretRef:
+              name: ""
+              namespace: provider-cloudscale-secrets
+            endpointURL: ""
+            region: ""
+      patches:
+        - type: PatchSet
+          patchSetName: annotations
+        - type: PatchSet
+          patchSetName: labels
+        - type: FromCompositeFieldPath
+          fromFieldPath: metadata.labels[crossplane.io/composite]
+          toFieldPath: metadata.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.parameters.bucketName
+          toFieldPath: spec.forProvider.bucketName
+        - fromFieldPath: metadata.labels[crossplane.io/composite]
+          toFieldPath: spec.forProvider.credentialsSecretRef.name
+        # Set endpoint
+        - fromFieldPath: spec.parameters.region
+          toFieldPath: spec.forProvider.endpointURL
+          transforms:
+            - type: string
+              string:
+                fmt: "objects.%s.cloudscale.ch"
+        # Set region
+        - fromFieldPath: spec.parameters.region
+          toFieldPath: spec.forProvider.region

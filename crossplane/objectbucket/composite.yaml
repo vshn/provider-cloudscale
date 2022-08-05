@@ -1,0 +1,50 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xobjectbuckets.appcat.vshn.io
+spec:
+  group: appcat.vshn.io
+  names:
+    kind: XObjectBucket
+    plural: xobjectbuckets
+  claimNames:
+    kind: ObjectBucket
+    plural: objectbuckets
+  connectionSecretKeys:
+    - AWS_ACCESS_KEY_ID
+    - AWS_SECRET_ACCESS_KEY
+  defaultCompositionRef:
+    name: objectbucket-cloudscale
+  versions:
+    - name: v1
+      referenceable: true
+      served: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              required:
+                - parameters
+              properties:
+                parameters:
+                  type: object
+                  required:
+                    - bucketName
+                    - region
+                  properties:
+                    bucketName:
+                      description: BucketName is the name of the bucket to create. Cannot
+                        be changed after bucket is created. Name must be acceptable by the S3
+                        protocol, which follows RFC 1123. Be aware that S3 providers may require
+                        a unique name across the platform or region.
+                      type: string
+                    region:
+                      description: Region is the name of the region where the bucket shall
+                        be created. The region must be available in the S3 endpoint. Accepted
+                        values are LPG and RMA.
+                      type: string
+                      enum:
+                        - lpg
+                        - rma

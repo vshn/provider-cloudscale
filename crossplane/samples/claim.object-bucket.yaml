@@ -1,0 +1,11 @@
+apiVersion: appcat.vshn.io/v1
+kind: ObjectBucket
+metadata:
+  name: object-bucket-claim
+  namespace: default
+spec:
+  parameters:
+    bucketName: my-provider-test-bucket-from-claim
+    region: rma
+  writeConnectionSecretToRef:
+    name: credentials
