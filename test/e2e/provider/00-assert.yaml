@@ -31,3 +31,10 @@ status:
       status: 'True'
       reason: ReconcileSuccess
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: objectsuser-credentials
+  ownerReferences:
+    - name: e2e-test-objectsuser
+      kind: ObjectsUser

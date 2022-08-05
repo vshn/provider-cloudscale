@@ -112,14 +112,17 @@ $(webhook_cert): $(webhook_key)
 ### with KUTTL (https://kuttl.dev)
 ###
 
-kuttl_bin = $(GOPATH)/kubectl-kuttl
+kuttl_bin = $(GOPATH)/bin/kubectl-kuttl
 $(kuttl_bin):
 	go install github.com/kudobuilder/kuttl/cmd/kubectl-kuttl@latest
 
+mc_bin = $(GOPATH)/bin/mc
+$(mc_bin):
+	go install github.com/minio/mc@latest
 
 test-e2e: export KUBECONFIG = $(KIND_KUBECONFIG)
-test-e2e: $(kuttl_bin) local-install provider-config ## E2E tests
+test-e2e: $(kuttl_bin) $(mc_bin) local-install provider-config ## E2E tests
 	kubectl create ns --save-config e2e-test --dry-run=client -o yaml | kubectl apply -f -
 	$(kuttl_bin) test ./test/e2e --config ./test/e2e/kuttl-test.yaml
-	@rm kubeconfig
+	@rm -f kubeconfig
 # kuttle leaves kubeconfig garbage: https://github.com/kudobuilder/kuttl/issues/297
