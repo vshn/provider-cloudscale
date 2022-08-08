@@ -20,6 +20,8 @@ include Makefile.vars.mk
 -include test/local.mk
 # Crossplane packaging
 -include package/package.mk
+# Crossplane composition
+-include crossplane/composition.mk
 
 .PHONY: help
 help: ## Show this help

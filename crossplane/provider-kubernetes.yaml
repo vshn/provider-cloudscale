@@ -1,0 +1,80 @@
+---
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  labels:
+    name: provider-kubernetes
+  name: provider-kubernetes
+spec:
+  package: "crossplane/provider-kubernetes:v0.4.0"
+  controllerConfigRef:
+    name: providerconfig-kubernetes
+---
+apiVersion: kubernetes.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: provider-config
+spec:
+  credentials:
+    source: InjectedIdentity
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: provider-kubernetes
+  namespace: crossplane-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: crossplane:provider:provider-kubernetes:system:custom
+rules:
+  - verbs:
+      - get
+      - list
+      - watch
+      - update
+      - patch
+      - create
+    apiGroups:
+      - kubernetes.crossplane.io
+    resources:
+      - '*'
+  - verbs:
+      - '*'
+    apiGroups:
+      - ''
+      - coordination.k8s.io
+    resources:
+      - secrets
+      - configmaps
+      - events
+      - leases
+  - verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+    apiGroups:
+      - ''
+    resources:
+      - namespaces
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: crossplane:provider:provider-kubernetes:system:custom
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: crossplane:provider:provider-kubernetes:system:custom
+subjects:
+- kind: ServiceAccount
+  name: provider-kubernetes
+  namespace: crossplane-system
+---
+apiVersion: pkg.crossplane.io/v1alpha1
+kind: ControllerConfig
+metadata:
+  name: providerconfig-kubernetes
+spec:
+  serviceAccountName: provider-kubernetes

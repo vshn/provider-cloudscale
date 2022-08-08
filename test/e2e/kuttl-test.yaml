@@ -4,3 +4,4 @@ testDirs:
   - ./test/e2e
 namespace: default
 timeout: 60 # some tests require more than 30s
+parallel: 1

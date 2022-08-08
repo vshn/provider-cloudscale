@@ -123,7 +123,7 @@ $(mc_bin): | $(go_bin)
 	go install github.com/minio/mc@latest
 
 test-e2e: export KUBECONFIG = $(KIND_KUBECONFIG)
-test-e2e: $(kuttl_bin) $(mc_bin) local-install provider-config ## E2E tests
+test-e2e: $(kuttl_bin) $(mc_bin) local-install provider-config crossplane-composition ## E2E tests
 	GOBIN=$(go_bin) $(kuttl_bin) test ./test/e2e --config ./test/e2e/kuttl-test.yaml
 	@rm -f kubeconfig
 # kuttle leaves kubeconfig garbage: https://github.com/kudobuilder/kuttl/issues/297

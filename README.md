@@ -45,8 +45,8 @@ See all targets with `make help`
 ### QuickStart Demonstration
 
 1. Get an API token cloudscale.ch
-1. `export CLOUDSCALE_API_TOKEN=<the-token>`
-1. `make local-install install-samples`
+2. `export CLOUDSCALE_API_TOKEN=<the-token>`
+3. `make local-install install-samples`
 
 ### Kubernetes Webhook Troubleshooting
 
@@ -69,3 +69,7 @@ To test and troubleshoot the webhooks on the cluster, simply apply your changes 
 ### Crossplane Provider Mechanics
 
 For detailed information on how Crossplane Provider works from a development perspective check [provider mechanics documentation page](https://kb.vshn.ch/app-catalog/explanations/crossplane_provider_mechanics.html). 
+
+## Run Tests for XRD and Composition
+
+Testing of the composition is handled by kuttl. You need it installed on your machine in order to run the tests.
