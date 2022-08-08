@@ -90,5 +90,5 @@ run-operator: ## Run in Operator mode against your current kube context
 
 .PHONY: clean
 clean: kind-clean .package-clean .envtest-clean .e2e-test-clean ## Cleans local build artifacts
-	rm -rf docs/node_modules $(docs_out_dir) dist .cache
+	rm -rf docs/node_modules $(docs_out_dir) dist .cache .work
 	$(DOCKER_CMD) rmi $(CONTAINER_IMG) || true

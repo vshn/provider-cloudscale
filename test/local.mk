@@ -56,14 +56,12 @@ provider-config: $(KIND_KUBECONFIG) $(kind_dir)/.credentials.yaml
 ### Integration Tests
 ###
 
-setup_envtest_bin = $(GOPATH)/bin/setup-envtest
+setup_envtest_bin = $(go_bin)/setup-envtest
 envtest_crd_dir ?= $(kind_dir)/crds
 
 # Prepare binary
-# We need to set the Go arch since the binary is meant for the user's OS.
-$(setup_envtest_bin): export GOOS = $(shell go env GOOS)
-$(setup_envtest_bin): export GOARCH = $(shell go env GOARCH)
-$(setup_envtest_bin):
+$(setup_envtest_bin): export GOBIN = $(go_bin)
+$(setup_envtest_bin): | $(go_bin)
 	go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
 .PHONY: test-integration
@@ -114,12 +112,14 @@ $(webhook_cert): $(webhook_key)
 ### with KUTTL (https://kuttl.dev)
 ###
 
-kuttl_bin = $(GOPATH)/bin/kubectl-kuttl
-$(kuttl_bin):
+kuttl_bin = $(go_bin)/kubectl-kuttl
+$(kuttl_bin): export GOBIN = $(go_bin)
+$(kuttl_bin): | $(go_bin)
 	go install github.com/kudobuilder/kuttl/cmd/kubectl-kuttl@latest
 
-mc_bin = $(GOPATH)/bin/mc
-$(mc_bin):
+mc_bin = $(go_bin)/mc
+$(mc_bin): export GOBIN = $(go_bin)
+$(mc_bin): | $(go_bin)
 	go install github.com/minio/mc@latest
 
 test-e2e: export KUBECONFIG = $(KIND_KUBECONFIG)

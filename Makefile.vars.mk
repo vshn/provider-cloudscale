@@ -7,7 +7,9 @@ PROJECT_OWNER ?= vshn
 
 ## BUILD:go
 BIN_FILENAME ?= provider-cloudscale
-GOPATH ?= $(shell go env GOPATH)
+go_bin ?= $(PWD)/.work/bin
+$(go_bin):
+	@mkdir -p $@
 
 ## BUILD:docker
 DOCKER_CMD ?= docker

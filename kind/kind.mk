@@ -1,8 +1,11 @@
 kind_dir ?= $(PWD)/.kind
-kind_bin = $(GOPATH)/bin/kind
+kind_bin = $(go_bin)/kind
 
 # Prepare kind binary
-$(kind_bin):
+$(kind_bin): export GOOS = $(shell go env GOOS)
+$(kind_bin): export GOARCH = $(shell go env GOARCH)
+$(kind_bin): export GOBIN = $(go_bin)
+$(kind_bin): | $(go_bin)
 	go install sigs.k8s.io/kind@latest
 
 .PHONY: kind
