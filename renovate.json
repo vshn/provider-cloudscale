@@ -13,18 +13,8 @@
   "packageRules": [
     {
       "matchPackagePatterns": [
-        "golang.org/x/*"
-      ],
-      "groupName": "golang.org/x",
-      "schedule": [
-        "on the first day of the month"
-      ],
-      "automerge": true
-    },
-    {
-      "matchPackagePatterns": [
-        "k8s.io/utils",
-        "sigs.k8s.io/controller-runtime/tools/setup-envtest"
+        "golang.org/x/*",
+        "k8s.io/utils"
       ],
       "groupName": "utils",
       "schedule": [
@@ -32,8 +22,5 @@
       ],
       "automerge": true
     }
-  ],
-  "prBodyNotes": [
-    "- [ ] PR contains the label that identifies the area, one of: `area:operator`, `area:chart`\n- [ ] If the PR is targeting a Helm chart, add the chart label, e.g. `chart:provider-cloudscale`"
   ]
 }

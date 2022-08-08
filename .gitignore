@@ -12,8 +12,9 @@ dist/
 .public/
 node_modules/
 
-# kind
+# work
 .kind/
+.work/
 
 # Charts
 .cr-release-packages/
