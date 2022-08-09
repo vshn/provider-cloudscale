@@ -9,9 +9,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/minio/minio-go/v7"
-	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
-	"github.com/vshn/provider-cloudscale/operator/steps"
-	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/vshn/provider-cloudscale/operator/pipelineutil"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
@@ -21,47 +19,46 @@ func (p *ProvisioningPipeline) Create(ctx context.Context, mg resource.Managed) 
 	log.Info("Creating resource")
 
 	bucket := fromManaged(mg)
-	pipe := pipeline.NewPipeline().WithBeforeHooks(steps.DebugLogger(ctx)).
+	pctx := &pipelineContext{Context: ctx, bucket: bucket}
+	pipe := pipeline.NewPipeline[*pipelineContext]()
+	pipe.WithBeforeHooks(pipelineutil.DebugLogger(pctx)).
 		WithSteps(
-			pipeline.NewStepFromFunc("create bucket", p.createS3BucketFn(bucket)),
-			pipeline.NewStepFromFunc("emit event", p.emitCreationEventFn(bucket)),
+			pipe.NewStep("create bucket", p.createS3Bucket),
+			pipe.NewStep("emit event", p.emitCreationEvent),
 		)
-	result := pipe.RunWithContext(ctx)
+	err := pipe.RunWithContext(pctx)
 
-	return managed.ExternalCreation{}, errors.Wrap(result.Err(), "cannot provision bucket")
+	return managed.ExternalCreation{}, errors.Wrap(err, "cannot provision bucket")
 }
 
-// createS3BucketFn creates a new bucket and sets the name in the status.
+// createS3Bucket creates a new bucket and sets the name in the status.
 // If the bucket already exists, and we have permissions to access it, no error is returned and the name is set in the status.
 // If the bucket exists, but we don't own it, an error is returned.
-func (p *ProvisioningPipeline) createS3BucketFn(bucket *cloudscalev1.Bucket) func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		s3Client := p.minio
+func (p *ProvisioningPipeline) createS3Bucket(ctx *pipelineContext) error {
+	s3Client := p.minio
+	bucket := ctx.bucket
 
-		bucketName := bucket.GetBucketName()
-		err := s3Client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: bucket.Spec.ForProvider.Region})
+	bucketName := bucket.GetBucketName()
+	err := s3Client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: bucket.Spec.ForProvider.Region})
 
-		if err != nil {
-			// Check to see if we already own this bucket (which happens if we run this twice)
-			exists, errBucketExists := s3Client.BucketExists(ctx, bucketName)
-			if errBucketExists == nil && exists {
-				return nil
-			} else {
-				// someone else might have created the bucket
-				return err
-			}
+	if err != nil {
+		// Check to see if we already own this bucket (which happens if we run this twice)
+		exists, errBucketExists := s3Client.BucketExists(ctx, bucketName)
+		if errBucketExists == nil && exists {
+			return nil
+		} else {
+			// someone else might have created the bucket
+			return err
 		}
-		return nil
 	}
+	return nil
 }
 
-func (p *ProvisioningPipeline) emitCreationEventFn(obj runtime.Object) func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		p.recorder.Event(obj, event.Event{
-			Type:    event.TypeNormal,
-			Reason:  "Created",
-			Message: "Bucket successfully created",
-		})
-		return nil
-	}
+func (p *ProvisioningPipeline) emitCreationEvent(ctx *pipelineContext) error {
+	p.recorder.Event(ctx.bucket, event.Event{
+		Type:    event.TypeNormal,
+		Reason:  "Created",
+		Message: "Bucket successfully created",
+	})
+	return nil
 }

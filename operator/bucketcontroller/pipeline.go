@@ -1,6 +1,8 @@
 package bucketcontroller
 
 import (
+	"context"
+
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/minio/minio-go/v7"
@@ -14,6 +16,11 @@ type ProvisioningPipeline struct {
 	kube     client.Client
 
 	minio *minio.Client
+}
+
+type pipelineContext struct {
+	context.Context
+	bucket *cloudscalev1.Bucket
 }
 
 // NewProvisioningPipeline returns a new instance of ProvisioningPipeline.

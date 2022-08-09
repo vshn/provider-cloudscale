@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"testing"
 
-	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
@@ -62,8 +61,7 @@ func Test_bucketConnector_validateSecret(t *testing.T) {
 				Data:       tc.givenSecretData}
 
 			c := &bucketConnector{}
-			ctx := pipeline.MutableContext(context.Background())
-			pipeline.StoreInContext(ctx, credentialsSecretKey{}, secret)
+			ctx := &connectContext{Context: context.Background(), credentialsSecret: secret}
 			err := c.validateSecret(ctx)
 
 			if tc.expectedError != "" {
