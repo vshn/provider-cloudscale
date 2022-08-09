@@ -10,8 +10,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
-	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
-	"github.com/vshn/provider-cloudscale/operator/steps"
+	"github.com/vshn/provider-cloudscale/operator/pipelineutil"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	controllerruntime "sigs.k8s.io/controller-runtime"
@@ -34,12 +33,13 @@ func (p *ObjectsUserPipeline) Observe(ctx context.Context, mg resource.Managed) 
 		}
 	}
 
-	err := p.getObjectsUserFn(user)(ctx)
+	pctx := &pipelineContext{Context: ctx, user: user}
+	err := p.getObjectsUser(pctx)
 	if err != nil {
 		return managed.ExternalObservation{}, resource.Ignore(isNotFound, err)
 	}
 
-	csUser := p.csUser
+	csUser := pctx.csUser
 	user.Status.AtProvider.Tags = fromTagMap(csUser.Tags)
 	user.Status.AtProvider.DisplayName = csUser.DisplayName
 
@@ -47,15 +47,14 @@ func (p *ObjectsUserPipeline) Observe(ctx context.Context, mg resource.Managed) 
 		return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false, ConnectionDetails: toConnectionDetails(csUser)}, nil
 	}
 
-	result := pipeline.NewPipeline().WithBeforeHooks(steps.DebugLogger(ctx)).WithSteps(
-		pipeline.If(hasSecretRef(user),
-			pipeline.NewPipeline().WithNestedSteps("observe credentials secret",
-				pipeline.NewStepFromFunc("fetch credentials secret", p.fetchCredentialsSecretFn(user)),
-				pipeline.NewStepFromFunc("compare credentials", p.checkCredentials),
-			).WithErrorHandler(p.observeCredentialsHandler),
-		),
-	).RunWithContext(ctx)
-	if result.IsFailed() {
+	pipe := pipeline.NewPipeline[*pipelineContext]()
+	result := pipe.WithBeforeHooks(pipelineutil.DebugLogger(pctx)).WithSteps(
+		pipe.WithNestedSteps("observe credentials secret", hasSecretRef,
+			pipe.NewStep("fetch credentials secret", p.fetchCredentialsSecret),
+			pipe.NewStep("compare credentials", p.checkCredentials),
+		).WithErrorHandler(p.observeCredentialsHandler),
+	).RunWithContext(pctx)
+	if result != nil {
 		return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false, ConnectionDetails: toConnectionDetails(csUser)}, nil
 	}
 
@@ -63,49 +62,46 @@ func (p *ObjectsUserPipeline) Observe(ctx context.Context, mg resource.Managed) 
 	return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: true, ConnectionDetails: toConnectionDetails(csUser)}, nil
 }
 
-// getObjectsUserFn fetches an existing objects user from the project associated with the API token.
-func (p *ObjectsUserPipeline) getObjectsUserFn(user *cloudscalev1.ObjectsUser) func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		csClient := p.csClient
-		log := controllerruntime.LoggerFrom(ctx)
+// getObjectsUser fetches an existing objects user from the project associated with the API token.
+func (p *ObjectsUserPipeline) getObjectsUser(ctx *pipelineContext) error {
+	csClient := p.csClient
+	log := controllerruntime.LoggerFrom(ctx)
 
-		csUser, err := csClient.ObjectsUsers.Get(ctx, user.Status.AtProvider.UserID)
-		if err != nil {
-			return err
-		}
-		p.csUser = csUser
-		log.V(1).Info("Fetched objects user in cloudscale", "userID", csUser.ID, "displayName", csUser.DisplayName, "tags", csUser.Tags)
-		return nil
-	}
-}
-
-func (p *ObjectsUserPipeline) fetchCredentialsSecretFn(user *cloudscalev1.ObjectsUser) func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		kube := p.kube
-		secretRef := user.Spec.WriteConnectionSecretToReference
-		p.credentialsSecret = &corev1.Secret{}
-
-		err := kube.Get(ctx, types.NamespacedName{Namespace: secretRef.Namespace, Name: secretRef.Name}, p.credentialsSecret)
+	csUser, err := csClient.ObjectsUsers.Get(ctx, ctx.user.Status.AtProvider.UserID)
+	if err != nil {
 		return err
 	}
+	ctx.csUser = csUser
+	log.V(1).Info("Fetched objects user in cloudscale", "userID", csUser.ID, "displayName", csUser.DisplayName, "tags", csUser.Tags)
+	return nil
 }
 
-func (p *ObjectsUserPipeline) checkCredentials(_ context.Context) error {
-	data := p.credentialsSecret.Data
+func (p *ObjectsUserPipeline) fetchCredentialsSecret(ctx *pipelineContext) error {
+	kube := p.kube
+	secretRef := ctx.user.Spec.WriteConnectionSecretToReference
+	ctx.credentialsSecret = &corev1.Secret{}
+
+	err := kube.Get(ctx, types.NamespacedName{Namespace: secretRef.Namespace, Name: secretRef.Name}, ctx.credentialsSecret)
+	return err
+}
+
+func (p *ObjectsUserPipeline) checkCredentials(ctx *pipelineContext) error {
+	secret := ctx.credentialsSecret
+	data := secret.Data
 
 	if len(data) == 0 {
-		return fmt.Errorf("secret %q does not have any data", fmt.Sprintf("%s/%s", p.credentialsSecret.Namespace, p.credentialsSecret.Name))
+		return fmt.Errorf("secret %q does not have any data", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name))
 	}
 
-	for key, desired := range toConnectionDetails(p.csUser) {
+	for key, desired := range toConnectionDetails(ctx.csUser) {
 		if observed, exists := data[key]; !exists || string(observed) != string(desired) {
-			return fmt.Errorf("secret %q is missing on of the following keys or content: %s", fmt.Sprintf("%s/%s", p.credentialsSecret.Namespace, p.credentialsSecret.Name), key)
+			return fmt.Errorf("secret %q is missing on of the following keys or content: %s", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name), key)
 		}
 	}
 	return nil
 }
 
-func (p *ObjectsUserPipeline) observeCredentialsHandler(ctx context.Context, err error) error {
+func (p *ObjectsUserPipeline) observeCredentialsHandler(ctx *pipelineContext, err error) error {
 	log := controllerruntime.LoggerFrom(ctx)
 	log.V(1).Error(err, "Credentials Secret needs reconciling")
 	return nil
