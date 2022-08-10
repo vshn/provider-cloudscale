@@ -3,7 +3,7 @@ module github.com/vshn/provider-cloudscale
 go 1.18
 
 require (
-	github.com/ccremer/go-command-pipeline v0.18.0
+	github.com/ccremer/go-command-pipeline v0.19.0
 	github.com/cloudscale-ch/cloudscale-go-sdk/v2 v2.0.1
 	github.com/crossplane/crossplane-runtime v0.17.0
 	github.com/crossplane/crossplane-tools v0.0.0-20220310165030-1f43fc12793e

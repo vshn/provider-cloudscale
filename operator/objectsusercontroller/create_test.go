@@ -45,12 +45,12 @@ func (ts *ObjectsUserPipelineSuite) Test_ensureCredentialSecretFn() {
 	ts.EnsureNS(user.Spec.WriteConnectionSecretToReference.Namespace)
 
 	p := ObjectsUserPipeline{
-		kube:   ts.Client,
-		csUser: csUser,
+		kube: ts.Client,
 	}
 
 	// Act
-	err := p.ensureCredentialsSecretFn(user)(ts.Context)
+	ctx := &pipelineContext{Context: ts.Context, user: user, csUser: csUser}
+	err := p.ensureCredentialsSecret(ctx)
 	ts.Require().NoError(err)
 
 	// Assert

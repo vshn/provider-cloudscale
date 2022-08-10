@@ -10,8 +10,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/minio/minio-go/v7"
 	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
-	"github.com/vshn/provider-cloudscale/operator/steps"
-	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/vshn/provider-cloudscale/operator/pipelineutil"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
@@ -21,70 +20,64 @@ func (p *ProvisioningPipeline) Delete(ctx context.Context, mg resource.Managed) 
 	log.Info("Deleting resource")
 
 	bucket := fromManaged(mg)
-	pipe := pipeline.NewPipeline().WithBeforeHooks(steps.DebugLogger(ctx)).
+	pctx := &pipelineContext{Context: ctx, bucket: bucket}
+	pipe := pipeline.NewPipeline[*pipelineContext]()
+	pipe.WithBeforeHooks(pipelineutil.DebugLogger(pctx)).
 		WithSteps(
-			pipeline.If(hasDeleteAllPolicy(bucket),
-				pipeline.NewStepFromFunc("delete all objects", p.deleteAllObjectsFn(bucket)),
+			pipe.When(hasDeleteAllPolicy,
+				"delete all objects", p.deleteAllObjects,
 			),
-			pipeline.NewStepFromFunc("delete bucket", p.deleteS3BucketFn(bucket)),
-			pipeline.NewStepFromFunc("emit event", p.emitDeletionEventFn(bucket)),
+			pipe.NewStep("delete bucket", p.deleteS3Bucket),
+			pipe.NewStep("emit event", p.emitDeletionEvent),
 		)
-	result := pipe.RunWithContext(ctx)
-	return errors.Wrap(result.Err(), "cannot deprovision bucket")
+	err := pipe.RunWithContext(pctx)
+	return errors.Wrap(err, "cannot deprovision bucket")
 }
 
-func hasDeleteAllPolicy(bucket *cloudscalev1.Bucket) pipeline.Predicate {
-	return func(ctx context.Context) bool {
-		return bucket.Spec.ForProvider.BucketDeletionPolicy == cloudscalev1.DeleteAll
-	}
+func hasDeleteAllPolicy(ctx *pipelineContext) bool {
+	return ctx.bucket.Spec.ForProvider.BucketDeletionPolicy == cloudscalev1.DeleteAll
 }
 
-func (p *ProvisioningPipeline) deleteAllObjectsFn(bucket *cloudscalev1.Bucket) func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		log := controllerruntime.LoggerFrom(ctx)
-		bucketName := bucket.Status.AtProvider.BucketName
+func (p *ProvisioningPipeline) deleteAllObjects(ctx *pipelineContext) error {
+	log := controllerruntime.LoggerFrom(ctx)
+	bucketName := ctx.bucket.Status.AtProvider.BucketName
 
-		objectsCh := make(chan minio.ObjectInfo)
+	objectsCh := make(chan minio.ObjectInfo)
 
-		// Send object names that are needed to be removed to objectsCh
-		go func() {
-			defer close(objectsCh)
-			for object := range p.minio.ListObjects(ctx, bucketName, minio.ListObjectsOptions{Recursive: true}) {
-				if object.Err != nil {
-					log.V(1).Info("warning: cannot list object", "key", object.Key, "error", object.Err)
-					continue
-				}
-				objectsCh <- object
+	// Send object names that are needed to be removed to objectsCh
+	go func() {
+		defer close(objectsCh)
+		for object := range p.minio.ListObjects(ctx, bucketName, minio.ListObjectsOptions{Recursive: true}) {
+			if object.Err != nil {
+				log.V(1).Info("warning: cannot list object", "key", object.Key, "error", object.Err)
+				continue
 			}
-		}()
-
-		for obj := range p.minio.RemoveObjects(ctx, bucketName, objectsCh, minio.RemoveObjectsOptions{GovernanceBypass: true}) {
-			return fmt.Errorf("object %q cannot be removed: %w", obj.ObjectName, obj.Err)
+			objectsCh <- object
 		}
-		return nil
+	}()
+
+	for obj := range p.minio.RemoveObjects(ctx, bucketName, objectsCh, minio.RemoveObjectsOptions{GovernanceBypass: true}) {
+		return fmt.Errorf("object %q cannot be removed: %w", obj.ObjectName, obj.Err)
 	}
+	return nil
 }
 
-// deleteS3BucketFn deletes the bucket.
+// deleteS3Bucket deletes the bucket.
 // NOTE: The removal fails if there are still objects in the bucket.
 // This func does not recursively delete all objects beforehand.
-func (p *ProvisioningPipeline) deleteS3BucketFn(bucket *cloudscalev1.Bucket) func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		s3Client := p.minio
+func (p *ProvisioningPipeline) deleteS3Bucket(ctx *pipelineContext) error {
+	s3Client := p.minio
 
-		bucketName := bucket.Status.AtProvider.BucketName
-		err := s3Client.RemoveBucket(ctx, bucketName)
-		return err
-	}
+	bucketName := ctx.bucket.Status.AtProvider.BucketName
+	err := s3Client.RemoveBucket(ctx, bucketName)
+	return err
 }
 
-func (p *ProvisioningPipeline) emitDeletionEventFn(obj runtime.Object) func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		p.recorder.Event(obj, event.Event{
-			Type:    event.TypeNormal,
-			Reason:  "Deleted",
-			Message: "Bucket deleted",
-		})
-		return nil
-	}
+func (p *ProvisioningPipeline) emitDeletionEvent(ctx *pipelineContext) error {
+	p.recorder.Event(ctx.bucket, event.Event{
+		Type:    event.TypeNormal,
+		Reason:  "Deleted",
+		Message: "Bucket deleted",
+	})
+	return nil
 }

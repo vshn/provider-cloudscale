@@ -12,7 +12,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 	providerv1 "github.com/vshn/provider-cloudscale/apis/provider/v1"
-	"github.com/vshn/provider-cloudscale/operator/steps"
+	"github.com/vshn/provider-cloudscale/operator/pipelineutil"
 	"golang.org/x/oauth2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -30,67 +30,74 @@ type objectsUserConnector struct {
 	recorder event.Recorder
 }
 
-type providerConfigKey struct{}
-type apiTokenKey struct{}
+type connectContext struct {
+	context.Context
+	user           *cloudscalev1.ObjectsUser
+	providerConfig *providerv1.ProviderConfig
+	apiTokenSecret *corev1.Secret
+	apiToken       string
+}
 
 // Connect implements managed.ExternalConnecter.
 func (c *objectsUserConnector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	ctx = pipeline.MutableContext(ctx)
 	log := ctrl.LoggerFrom(ctx)
 	log.V(1).Info("Connecting resource")
 
 	user := fromManaged(mg)
-	result := pipeline.NewPipeline().WithBeforeHooks(steps.DebugLogger(ctx)).WithSteps(
-		pipeline.NewStepFromFunc("track provider config", c.trackProviderConfigFn(user)),
-		pipeline.NewStepFromFunc("fetch provider config", c.fetchProviderConfigFn(user)),
-		pipeline.NewStepFromFunc("fetch API token", c.fetchApiToken),
-	).RunWithContext(ctx)
-	if result.IsFailed() {
-		return nil, result.Err()
+	pctx := &connectContext{Context: ctx, user: user}
+	p := pipeline.NewPipeline[*connectContext]()
+	err := p.WithBeforeHooks(pipelineutil.DebugLogger(pctx)).
+		WithSteps(
+			p.NewStep("track provider config", c.trackProviderConfig),
+			p.NewStep("fetch provider config", c.fetchProviderConfig),
+			p.NewStep("fetch API token", c.fetchApiTokenSecret),
+			p.NewStep("read API token", c.readApiToken),
+		).RunWithContext(pctx)
+	if err != nil {
+		return nil, err
 	}
-	csClient := c.createCloudscaleClient(ctx)
+	csClient := c.createCloudscaleClient(pctx)
 	return NewPipeline(c.kube, c.recorder, csClient), nil
 }
 
 // createCloudscaleClient creates a new kube using the API token provided.
-func (c *objectsUserConnector) createCloudscaleClient(ctx context.Context) *cloudscalesdk.Client {
-	token := pipeline.MustLoadFromContext(ctx, apiTokenKey{}).(string)
+func (c *objectsUserConnector) createCloudscaleClient(ctx *connectContext) *cloudscalesdk.Client {
+	token := ctx.apiToken
 	tc := oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))
 	csClient := cloudscalesdk.NewClient(tc)
 	return csClient
 }
 
-func (c *objectsUserConnector) fetchProviderConfigFn(user *cloudscalev1.ObjectsUser) func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		config := &providerv1.ProviderConfig{}
-		err := c.kube.Get(ctx, types.NamespacedName{Name: user.Spec.ProviderConfigReference.Name}, config)
-		pipeline.StoreInContext(ctx, providerConfigKey{}, config)
-		return errors.Wrap(err, "cannot get ProviderConfig")
-	}
+func (c *objectsUserConnector) fetchProviderConfig(ctx *connectContext) error {
+	config := &providerv1.ProviderConfig{}
+	err := c.kube.Get(ctx, types.NamespacedName{Name: ctx.user.Spec.ProviderConfigReference.Name}, config)
+	ctx.providerConfig = config
+	return errors.Wrap(err, "cannot get ProviderConfig")
 }
 
-func (c *objectsUserConnector) fetchApiToken(ctx context.Context) error {
-	providerConfig := pipeline.MustLoadFromContext(ctx, providerConfigKey{}).(*providerv1.ProviderConfig)
+func (c *objectsUserConnector) fetchApiTokenSecret(ctx *connectContext) error {
+	providerConfig := ctx.providerConfig
 	secretRef := providerConfig.Spec.Credentials.APITokenSecretRef
 	secret := &corev1.Secret{}
 	err := c.kube.Get(ctx, types.NamespacedName{Name: secretRef.Name, Namespace: secretRef.Namespace}, secret)
-	if err != nil {
-		return errors.Wrap(err, "cannot get secret with API token")
-	}
+	ctx.apiTokenSecret = secret
+	return errors.Wrap(err, "cannot get secret with API token")
+}
+
+func (c *objectsUserConnector) readApiToken(ctx *connectContext) error {
+	secret := ctx.apiTokenSecret
 	if value, exists := secret.Data[CloudscaleAPITokenKey]; exists && string(value) != "" {
-		pipeline.StoreInContext(ctx, apiTokenKey{}, string(value))
+		ctx.apiToken = string(value)
 		return nil
 	}
 	return fmt.Errorf("%s doesn't exist in secret %s/%s", CloudscaleAPITokenKey, secret.Namespace, secret.Name)
 }
 
-// trackProviderConfigFn ensures that the ProviderConfig referenced by the ObjectsUser is not deleted until all ObjectsUser stop using the ProviderConfig.
+// trackProviderConfig ensures that the ProviderConfig referenced by the ObjectsUser is not deleted until all ObjectsUser stop using the ProviderConfig.
 // It's similar to a finalizer: Without the ProviderConfig we can't deprovision ObjectsUser (missing credentials).
 // It returns an error if the ProviderConfig reference is missing.
-func (c *objectsUserConnector) trackProviderConfigFn(user *cloudscalev1.ObjectsUser) func(ctx context.Context) error {
-	return func(ctx context.Context) error {
-		u := resource.NewProviderConfigUsageTracker(c.kube, &providerv1.ProviderConfigUsage{})
-		err := u.Track(ctx, user)
-		return err
-	}
+func (c *objectsUserConnector) trackProviderConfig(ctx *connectContext) error {
+	u := resource.NewProviderConfigUsageTracker(c.kube, &providerv1.ProviderConfigUsage{})
+	err := u.Track(ctx, ctx.user)
+	return err
 }

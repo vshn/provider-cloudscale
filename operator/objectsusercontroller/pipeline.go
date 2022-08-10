@@ -3,7 +3,6 @@ package objectsusercontroller
 import (
 	"context"
 
-	pipeline "github.com/ccremer/go-command-pipeline"
 	cloudscalesdk "github.com/cloudscale-ch/cloudscale-go-sdk/v2"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
@@ -22,8 +21,12 @@ const (
 type ObjectsUserPipeline struct {
 	kube     client.Client
 	recorder event.Recorder
+	csClient *cloudscalesdk.Client
+}
 
-	csClient          *cloudscalesdk.Client
+type pipelineContext struct {
+	context.Context
+	user              *cloudscalev1.ObjectsUser
 	csUser            *cloudscalesdk.ObjectsUser
 	credentialsSecret *corev1.Secret
 }
@@ -37,10 +40,8 @@ func NewPipeline(client client.Client, recorder event.Recorder, csClient *clouds
 	}
 }
 
-func hasSecretRef(user *cloudscalev1.ObjectsUser) pipeline.Predicate {
-	return func(ctx context.Context) bool {
-		return user.Spec.WriteConnectionSecretToReference != nil
-	}
+func hasSecretRef(ctx *pipelineContext) bool {
+	return ctx.user.Spec.WriteConnectionSecretToReference != nil
 }
 
 func toConnectionDetails(csUser *cloudscalesdk.ObjectsUser) managed.ConnectionDetails {
