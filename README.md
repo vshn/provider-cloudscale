@@ -65,3 +65,7 @@ To test and troubleshoot the webhooks on the cluster, simply apply your changes 
     # send an admission request
     curl -k -v -H "Content-Type: application/json" --data @samples/admission.k8s.io_admissionreview.json https://localhost:9443/validate-cloudscale-crossplane-io-v1-bucket
     ```
+
+### Crossplane Provider Mechanics
+
+For detailed information on how Crossplane Provider works from a development perspective check [provider mechanics documentation page](https://kb.vshn.ch/app-catalog/explanations/crossplane_provider_mechanics.html). 

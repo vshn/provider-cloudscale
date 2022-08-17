@@ -13,6 +13,5 @@
 
 .Explanation
 * For Developers
-** xref:explanations/dev/provider-mechanics.adoc[Crossplane Provider Mechanics]
 ** xref:explanations/dev/objectsuser-reconciliation.adoc[ObjectsUser Reconciliation]
 ** xref:explanations/dev/bucket-reconciliation.adoc[Bucket Reconciliation]
