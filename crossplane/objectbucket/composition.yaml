@@ -57,7 +57,6 @@ spec:
           forProvider:
             displayName: "" # patched
             tags:
-              zone: local-dev-kind
               namespace: # patched
               tenant: # patched
           writeConnectionSecretToRef:
@@ -117,6 +116,7 @@ spec:
               namespace: provider-cloudscale-secrets
             endpointURL: ""
             region: ""
+            bucketDeletionPolicy: DeleteIfEmpty
       patches:
         - type: PatchSet
           patchSetName: annotations
