@@ -61,8 +61,13 @@ func Test_bucketConnector_validateSecret(t *testing.T) {
 				Data:       tc.givenSecretData}
 
 			c := &bucketConnector{}
-			ctx := &connectContext{Context: context.Background(), credentialsSecret: secret}
-			err := c.validateSecret(ctx)
+			ctx := &connectContext{
+				pipelineContext: pipelineContext{
+					Context:                     context.Background(),
+					ObjectsUserCredentialSecret: secret,
+				},
+			}
+			err := c.validateSecretFn(ctx)(&ctx.pipelineContext)
 
 			if tc.expectedError != "" {
 				assert.EqualError(t, err, tc.expectedError)

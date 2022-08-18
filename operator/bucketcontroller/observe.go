@@ -2,6 +2,7 @@ package bucketcontroller
 
 import (
 	"context"
+	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
@@ -26,7 +27,15 @@ func (p *ProvisioningPipeline) Observe(ctx context.Context, mg resource.Managed)
 	if exists {
 		bucket.Status.AtProvider.BucketName = bucketName
 		bucket.SetConditions(xpv1.Available())
-		return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: true}, nil
+		return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: true, ConnectionDetails: toConnectionDetails(bucket)}, nil
 	}
 	return managed.ExternalObservation{}, nil
+}
+
+func toConnectionDetails(bucket *cloudscalev1.Bucket) managed.ConnectionDetails {
+	return map[string][]byte{
+		EndpointName: []byte(bucket.Spec.ForProvider.EndpointURL),
+		RegionName:   []byte(bucket.Spec.ForProvider.Region),
+		BucketName:   []byte(bucket.Spec.ForProvider.BucketName),
+	}
 }

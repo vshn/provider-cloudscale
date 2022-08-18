@@ -3,7 +3,6 @@ package bucketcontroller
 import (
 	"context"
 	"fmt"
-
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/event"
@@ -20,7 +19,7 @@ func (p *ProvisioningPipeline) Delete(ctx context.Context, mg resource.Managed) 
 	log.Info("Deleting resource")
 
 	bucket := fromManaged(mg)
-	pctx := &pipelineContext{Context: ctx, bucket: bucket}
+	pctx := &pipelineContext{Context: ctx, Bucket: bucket}
 	pipe := pipeline.NewPipeline[*pipelineContext]()
 	pipe.WithBeforeHooks(pipelineutil.DebugLogger(pctx)).
 		WithSteps(
@@ -35,12 +34,12 @@ func (p *ProvisioningPipeline) Delete(ctx context.Context, mg resource.Managed) 
 }
 
 func hasDeleteAllPolicy(ctx *pipelineContext) bool {
-	return ctx.bucket.Spec.ForProvider.BucketDeletionPolicy == cloudscalev1.DeleteAll
+	return ctx.Bucket.Spec.ForProvider.BucketDeletionPolicy == cloudscalev1.DeleteAll
 }
 
 func (p *ProvisioningPipeline) deleteAllObjects(ctx *pipelineContext) error {
 	log := controllerruntime.LoggerFrom(ctx)
-	bucketName := ctx.bucket.Status.AtProvider.BucketName
+	bucketName := ctx.Bucket.Status.AtProvider.BucketName
 
 	objectsCh := make(chan minio.ObjectInfo)
 
@@ -68,16 +67,22 @@ func (p *ProvisioningPipeline) deleteAllObjects(ctx *pipelineContext) error {
 func (p *ProvisioningPipeline) deleteS3Bucket(ctx *pipelineContext) error {
 	s3Client := p.minio
 
-	bucketName := ctx.bucket.Status.AtProvider.BucketName
+	bucketName := ctx.Bucket.Status.AtProvider.BucketName
 	err := s3Client.RemoveBucket(ctx, bucketName)
 	return err
 }
 
 func (p *ProvisioningPipeline) emitDeletionEvent(ctx *pipelineContext) error {
-	p.recorder.Event(ctx.bucket, event.Event{
+	p.recorder.Event(ctx.Bucket, event.Event{
 		Type:    event.TypeNormal,
 		Reason:  "Deleted",
 		Message: "Bucket deleted",
 	})
 	return nil
+}
+
+func deleteKeys(m map[string][]byte, keys ...string) {
+	for _, k := range keys {
+		delete(m, k)
+	}
 }

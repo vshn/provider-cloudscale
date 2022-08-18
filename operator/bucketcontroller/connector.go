@@ -8,7 +8,6 @@ import (
 
 	pipeline "github.com/ccremer/go-command-pipeline"
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/minio/minio-go/v7"
@@ -16,21 +15,16 @@ import (
 	cloudscalev1 "github.com/vshn/provider-cloudscale/apis/cloudscale/v1"
 	"github.com/vshn/provider-cloudscale/operator/pipelineutil"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/types"
 	controllerruntime "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type bucketConnector struct {
-	kube     client.Client
-	recorder event.Recorder
+	ProvisioningPipeline
 }
 
 type connectContext struct {
-	context.Context
-	bucket            *cloudscalev1.Bucket
-	minio             *minio.Client
-	credentialsSecret *corev1.Secret
+	minio *minio.Client
+	pipelineContext
 }
 
 // Connect implements managed.ExternalConnecter.
@@ -48,15 +42,20 @@ func (c *bucketConnector) Connect(ctx context.Context, mg resource.Managed) (man
 		return &NoopClient{}, nil
 	}
 
-	pctx := &connectContext{Context: ctx, bucket: bucket}
-	pipe := pipeline.NewPipeline[*connectContext]()
-	pipe.WithBeforeHooks(pipelineutil.DebugLogger(pctx)).
+	pctx := &connectContext{
+		pipelineContext: pipelineContext{
+			Context: ctx,
+			Bucket:  bucket,
+		},
+	}
+	pipe := pipeline.NewPipeline[*pipelineContext]()
+	pipe.WithBeforeHooks(pipelineutil.DebugLogger(&pctx.pipelineContext)).
 		WithSteps(
-			pipe.NewStep("fetch secret", c.fetchCredentialsSecret),
-			pipe.NewStep("validate secret", c.validateSecret),
-			pipe.NewStep("create S3 client", c.createS3Client),
+			pipe.NewStep("fetch secret", c.fetchSecret),
+			pipe.NewStep("validate secret", c.validateSecretFn(pctx)),
+			pipe.NewStep("create S3 client", c.createS3ClientFn(pctx)),
 		)
-	result := pipe.RunWithContext(pctx)
+	result := pipe.RunWithContext(&pctx.pipelineContext)
 
 	if result != nil {
 		return nil, result
@@ -67,61 +66,50 @@ func (c *bucketConnector) Connect(ctx context.Context, mg resource.Managed) (man
 	return NewProvisioningPipeline(c.kube, c.recorder, pctx.minio), nil
 }
 
-func (c *bucketConnector) fetchCredentialsSecret(ctx *connectContext) error {
-	log := controllerruntime.LoggerFrom(ctx)
-	bucket := ctx.bucket
+func (c *bucketConnector) validateSecretFn(ctx *connectContext) func(pipelineContext *pipelineContext) error {
+	return func(_ *pipelineContext) error {
+		secret := ctx.ObjectsUserCredentialSecret
 
-	secret := &corev1.Secret{}
-	secretRef := bucket.Spec.ForProvider.CredentialsSecretRef
-	err := c.kube.Get(ctx, types.NamespacedName{Name: secretRef.Name, Namespace: secretRef.Namespace}, secret)
-	if err != nil {
-		return err
-	}
-	ctx.credentialsSecret = secret
-	log.V(1).Info("Fetched credentials secret", "secret name", fmt.Sprintf("%s/%s", secretRef.Namespace, secretRef.Name))
-	return nil
-}
-
-func (c *bucketConnector) validateSecret(ctx *connectContext) error {
-	secret := ctx.credentialsSecret
-
-	if secret.Data == nil {
-		return fmt.Errorf("secret %q does not have any data", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name))
-	}
-
-	requiredKeys := []string{cloudscalev1.AccessKeyIDName, cloudscalev1.SecretAccessKeyName}
-	for _, key := range requiredKeys {
-		if val, exists := secret.Data[key]; !exists || string(val) == "" {
-			return fmt.Errorf("secret %q is missing one of the following keys or content: %s", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name), requiredKeys)
+		if secret.Data == nil {
+			return fmt.Errorf("secret %q does not have any data", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name))
 		}
+
+		requiredKeys := []string{cloudscalev1.AccessKeyIDName, cloudscalev1.SecretAccessKeyName}
+		for _, key := range requiredKeys {
+			if val, exists := secret.Data[key]; !exists || string(val) == "" {
+				return fmt.Errorf("secret %q is missing one of the following keys or content: %s", fmt.Sprintf("%s/%s", secret.Namespace, secret.Name), requiredKeys)
+			}
+		}
+		return nil
 	}
-	return nil
 }
 
 // createS3Client creates a new client using the S3 credentials from the Secret.
-func (c *bucketConnector) createS3Client(ctx *connectContext) error {
-	secret := ctx.credentialsSecret
-	bucket := ctx.bucket
+func (c *bucketConnector) createS3ClientFn(ctx *connectContext) func(pipelineContext *pipelineContext) error {
+	return func(_ *pipelineContext) error {
+		secret := ctx.ObjectsUserCredentialSecret
+		bucket := ctx.Bucket
 
-	parsed, err := url.Parse(bucket.Spec.ForProvider.EndpointURL)
-	if err != nil {
+		parsed, err := url.Parse(bucket.Spec.ForProvider.EndpointURL)
+		if err != nil {
+			return err
+		}
+
+		// we assume here that the secret has the expected keys and data.
+		accessKey := string(secret.Data[cloudscalev1.AccessKeyIDName])
+		secretKey := string(secret.Data[cloudscalev1.SecretAccessKeyName])
+
+		host := parsed.Host
+		if parsed.Host == "" {
+			host = parsed.Path // if no scheme is given, it's parsed as a path -.-
+		}
+		s3Client, err := minio.New(host, &minio.Options{
+			Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
+			Secure: isTLSEnabled(parsed),
+		})
+		ctx.minio = s3Client
 		return err
 	}
-
-	// we assume here that the secret has the expected keys and data.
-	accessKey := string(secret.Data[cloudscalev1.AccessKeyIDName])
-	secretKey := string(secret.Data[cloudscalev1.SecretAccessKeyName])
-
-	host := parsed.Host
-	if parsed.Host == "" {
-		host = parsed.Path // if no scheme is given, it's parsed as a path -.-
-	}
-	s3Client, err := minio.New(host, &minio.Options{
-		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
-		Secure: isTLSEnabled(parsed),
-	})
-	ctx.minio = s3Client
-	return err
 }
 
 // isBucketAlreadyDeleted returns true if the status conditions are in a state where one can assume that the deletion of a bucket was successful in a previous reconciliation.

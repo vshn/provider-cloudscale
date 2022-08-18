@@ -12,5 +12,8 @@ spec:
       namespace: default
     endpointURL: objects.rma.cloudscale.ch
     region: rma
+  writeConnectionSecretToRef:
+    name: bucket-credential-secret
+    namespace: default
 status:
   atProvider: {}

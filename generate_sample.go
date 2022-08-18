@@ -86,6 +86,12 @@ func newBucketSample() *cloudscalev1.Bucket {
 		},
 		ObjectMeta: metav1.ObjectMeta{Name: "bucket"},
 		Spec: cloudscalev1.BucketSpec{
+			ResourceSpec: xpv1.ResourceSpec{
+				WriteConnectionSecretToReference: &xpv1.SecretReference{
+					Name:      "bucket-credential-secret",
+					Namespace: "default",
+				},
+			},
 			ForProvider: cloudscalev1.BucketParameters{
 				CredentialsSecretRef: corev1.SecretReference{
 					Name:      "my-cloudscale-user-credentials",

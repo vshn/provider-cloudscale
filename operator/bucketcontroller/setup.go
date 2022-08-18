@@ -22,8 +22,10 @@ func SetupController(mgr ctrl.Manager) error {
 	r := managed.NewReconciler(mgr,
 		resource.ManagedKind(cloudscalev1.BucketGroupVersionKind),
 		managed.WithExternalConnecter(&bucketConnector{
-			kube:     mgr.GetClient(),
-			recorder: recorder,
+			ProvisioningPipeline: ProvisioningPipeline{
+				kube:     mgr.GetClient(),
+				recorder: recorder,
+			},
 		}),
 		managed.WithLogger(logging.NewLogrLogger(mgr.GetLogger().WithValues("controller", name))),
 		managed.WithRecorder(recorder),

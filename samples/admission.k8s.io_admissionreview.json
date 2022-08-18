@@ -39,6 +39,10 @@
         "creationTimestamp": null
       },
       "spec": {
+        "writeConnectionSecretToRef": {
+          "name": "bucket-credential-secret",
+          "namespace": "default"
+        },
         "forProvider": {
           "credentialsSecretRef": {
             "name": "my-cloudscale-user-credentials",
@@ -62,6 +66,10 @@
         "creationTimestamp": null
       },
       "spec": {
+        "writeConnectionSecretToRef": {
+          "name": "bucket-credential-secret",
+          "namespace": "default"
+        },
         "forProvider": {
           "credentialsSecretRef": {
             "name": "my-cloudscale-user-credentials",
