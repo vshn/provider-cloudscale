@@ -28,3 +28,13 @@ status:
       status: 'True'
       reason: ReconcileSuccess
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-cloudscale-user-credentials
+  namespace: default
+data:
+  BUCKET_NAME: bXktcHJvdmlkZXItdGVzdC1idWNrZXQ=
+  ENDPOINT: b2JqZWN0cy5ybWEuY2xvdWRzY2FsZS5jaA==
+  REGION: cm1h
+type: connection.crossplane.io/v1alpha1
