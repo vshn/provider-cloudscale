@@ -93,7 +93,7 @@ type BucketStatus struct {
 // +kubebuilder:printcolumn:name="Region",type="string",JSONPath=".spec.forProvider.region"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,categories={crossplane,cloudscale}
-// +kubebuilder:webhook:verbs=update,path=/validate-cloudscale-crossplane-io-v1-bucket,mutating=false,failurePolicy=fail,groups=cloudscale.crossplane.io,resources=buckets,versions=v1,name=buckets.cloudscale.crossplane.io,sideEffects=None,admissionReviewVersions=v1
+// +kubebuilder:webhook:verbs=create;update,path=/validate-cloudscale-crossplane-io-v1-bucket,mutating=false,failurePolicy=fail,groups=cloudscale.crossplane.io,resources=buckets,versions=v1,name=buckets.cloudscale.crossplane.io,sideEffects=None,admissionReviewVersions=v1
 
 // Bucket is the API for creating S3 buckets.
 type Bucket struct {
