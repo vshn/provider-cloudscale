@@ -25,6 +25,7 @@ $(crossplane_sentinel): $(KIND_KUBECONFIG)
 		--set "args[0]='--debug'" \
 		--set "args[1]='--enable-composition-revisions'" \
 		--set webhooks.enabled=true \
+		--set rbacManager.managementPolicy=Basic \
 		--wait
 	@touch $@
 
