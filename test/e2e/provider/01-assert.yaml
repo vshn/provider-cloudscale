@@ -10,7 +10,7 @@ metadata:
 spec:
   deletionPolicy: Delete
   forProvider:
-    bucketName: provider-cloudscale-e2e-test-kuttl
+    bucketName: e2e-test-kuttl-provider-cloudscale
     bucketDeletionPolicy: DeleteAll
     credentialsSecretRef:
       name: objectsuser-credentials-e2e-test-kuttl
@@ -19,7 +19,7 @@ spec:
     region: rma
 status:
   atProvider:
-    bucketName: provider-cloudscale-e2e-test-kuttl
+    bucketName: e2e-test-kuttl-provider-cloudscale
   conditions:
     - type: Ready
       status: 'True'

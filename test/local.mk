@@ -125,9 +125,12 @@ $(mc_bin): | $(go_bin)
 test-e2e: export KUBECONFIG = $(KIND_KUBECONFIG)
 test-e2e: $(kuttl_bin) $(mc_bin) local-install provider-config ## E2E tests
 	GOBIN=$(go_bin) $(kuttl_bin) test ./test/e2e --config ./test/e2e/kuttl-test.yaml
+# kuttl leaves kubeconfig garbage: https://github.com/kudobuilder/kuttl/issues/297
 	@rm -f kubeconfig
-# kuttle leaves kubeconfig garbage: https://github.com/kudobuilder/kuttl/issues/297
 
 .PHONY: .e2e-test-clean
+.e2e-test-clean: export KUBECONFIG = $(KIND_KUBECONFIG)
 .e2e-test-clean:
+	if [ -f $(KIND_KUBECONFIG) ]; then kubectl delete buckets --all; else echo "no kubeconfig found"; fi
+	if [ -f $(KIND_KUBECONFIG) ]; then kubectl delete objectsuser --all; else echo "no kubeconfig found"; fi
 	rm -f $(kuttl_bin) $(mc_bin)

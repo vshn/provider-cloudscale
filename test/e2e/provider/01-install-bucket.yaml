@@ -7,7 +7,7 @@ metadata:
   name: e2e-test-bucket
 spec:
   forProvider:
-    bucketName: provider-cloudscale-e2e-test-kuttl
+    bucketName: e2e-test-kuttl-provider-cloudscale
     bucketDeletionPolicy: DeleteAll
     credentialsSecretRef:
       name: objectsuser-credentials-e2e-test-kuttl
