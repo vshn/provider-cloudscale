@@ -63,9 +63,10 @@ type ObjectsUser struct {
 }
 
 // GetDisplayName returns the ObjectsUser display name in the following precedence:
-//  .spec.forProvider.displayName
-//  .metadata.annotations."crossplane.io/external-name"
-//  .metadata.name
+//
+//	.spec.forProvider.displayName
+//	.metadata.annotations."crossplane.io/external-name"
+//	.metadata.name
 func (in *ObjectsUser) GetDisplayName() string {
 	if in.Spec.ForProvider.DisplayName != "" {
 		return in.Spec.ForProvider.DisplayName
