@@ -3,4 +3,4 @@ kind: TestStep
 commands:
   # note: working dir is the where the yaml files are
   # Args: $endpoint $bucket $file_path $secret_name
-  - command: ../upload-object.sh objects.rma.cloudscale.ch provider-cloudscale-e2e-test-kuttl ../../../README.md objectsuser-credentials-e2e-test-kuttl
+  - command: ../upload-object.sh objects.rma.cloudscale.ch e2e-test-kuttl-provider-cloudscale ../../../README.md objectsuser-credentials-e2e-test-kuttl
