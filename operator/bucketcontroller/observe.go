@@ -27,6 +27,9 @@ func (p *ProvisioningPipeline) Observe(ctx context.Context, mg resource.Managed)
 		if errResp.StatusCode == http.StatusForbidden {
 			return managed.ExternalObservation{}, errors.Wrap(err, "wrong credentials or bucket exists already, try changing bucket name")
 		}
+		if errResp.StatusCode == http.StatusMovedPermanently {
+			return managed.ExternalObservation{}, errors.Wrap(err, "mismatching endpointURL and region, or bucket exists already in a different region, try changing bucket name")
+		}
 		return managed.ExternalObservation{}, errors.Wrap(err, "cannot determine whether bucket exists")
 	}
 	if exists {
