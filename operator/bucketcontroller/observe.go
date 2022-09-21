@@ -2,11 +2,13 @@ package bucketcontroller
 
 import (
 	"context"
+	"net/http"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	"github.com/minio/minio-go/v7"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
@@ -21,6 +23,10 @@ func (p *ProvisioningPipeline) Observe(ctx context.Context, mg resource.Managed)
 	bucketName := bucket.GetBucketName()
 	exists, err := s3Client.BucketExists(ctx, bucketName)
 	if err != nil {
+		errResp := minio.ToErrorResponse(err)
+		if errResp.StatusCode == http.StatusForbidden {
+			return managed.ExternalObservation{}, errors.Wrap(err, "wrong credentials or bucket exists already, try changing bucket name")
+		}
 		return managed.ExternalObservation{}, errors.Wrap(err, "cannot determine whether bucket exists")
 	}
 	if exists {
