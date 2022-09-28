@@ -3,7 +3,7 @@ apiVersion: cloudscale.crossplane.io/v1
 kind: Bucket
 metadata:
   annotations:
-    kuttl: '01-install'
+    cloudscale.crossplane.io/lock: claimed
   name: e2e-test-bucket
 spec:
   forProvider:
