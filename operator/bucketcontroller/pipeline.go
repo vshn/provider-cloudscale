@@ -35,3 +35,5 @@ func NewProvisioningPipeline(kube client.Client, recorder event.Recorder, minio 
 func fromManaged(mg resource.Managed) *cloudscalev1.Bucket {
 	return mg.(*cloudscalev1.Bucket)
 }
+
+const lockAnnotation = cloudscalev1.Group + "/lock"

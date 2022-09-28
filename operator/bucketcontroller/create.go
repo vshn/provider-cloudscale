@@ -24,6 +24,7 @@ func (p *ProvisioningPipeline) Create(ctx context.Context, mg resource.Managed) 
 	pipe.WithBeforeHooks(pipelineutil.DebugLogger(pctx)).
 		WithSteps(
 			pipe.NewStep("create bucket", p.createS3Bucket),
+			pipe.NewStep("set lock", p.setLock),
 			pipe.NewStep("emit event", p.emitCreationEvent),
 		)
 	err := pipe.RunWithContext(pctx)
@@ -51,6 +52,16 @@ func (p *ProvisioningPipeline) createS3Bucket(ctx *pipelineContext) error {
 			return err
 		}
 	}
+	return nil
+}
+
+// setLock sets an annotation that tells the Observe func that we have successfully created the bucket.
+// Without it, another resource that has the same bucket name might "adopt" the same bucket, causing 2 resources managing 1 bucket.
+func (p *ProvisioningPipeline) setLock(ctx *pipelineContext) error {
+	if ctx.bucket.Annotations == nil {
+		ctx.bucket.Annotations = map[string]string{}
+	}
+	ctx.bucket.Annotations[lockAnnotation] = "claimed"
 	return nil
 }
 
