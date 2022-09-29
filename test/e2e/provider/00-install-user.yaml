@@ -2,8 +2,6 @@
 apiVersion: cloudscale.crossplane.io/v1
 kind: ObjectsUser
 metadata:
-  annotations:
-    kuttl: '00-install'
   name: e2e-test-objectsuser
 spec:
   forProvider:

@@ -2,6 +2,7 @@ package bucketcontroller
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
@@ -12,6 +13,10 @@ import (
 	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
+var bucketExistsFn = func(ctx context.Context, mc *minio.Client, bucketName string) (bool, error) {
+	return mc.BucketExists(ctx, bucketName)
+}
+
 // Observe implements managed.ExternalClient.
 func (p *ProvisioningPipeline) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
 	log := controllerruntime.LoggerFrom(ctx)
@@ -21,7 +26,7 @@ func (p *ProvisioningPipeline) Observe(ctx context.Context, mg resource.Managed)
 	bucket := fromManaged(mg)
 
 	bucketName := bucket.GetBucketName()
-	exists, err := s3Client.BucketExists(ctx, bucketName)
+	exists, err := bucketExistsFn(ctx, s3Client, bucketName)
 	if err != nil {
 		errResp := minio.ToErrorResponse(err)
 		if errResp.StatusCode == http.StatusForbidden {
@@ -32,10 +37,12 @@ func (p *ProvisioningPipeline) Observe(ctx context.Context, mg resource.Managed)
 		}
 		return managed.ExternalObservation{}, errors.Wrap(err, "cannot determine whether bucket exists")
 	}
-	if exists {
+	if _, hasAnnotation := bucket.Annotations[lockAnnotation]; hasAnnotation && exists {
 		bucket.Status.AtProvider.BucketName = bucketName
 		bucket.SetConditions(xpv1.Available())
 		return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: true}, nil
+	} else if exists {
+		return managed.ExternalObservation{}, fmt.Errorf("bucket exists already, try changing bucket name: %s", bucketName)
 	}
 	return managed.ExternalObservation{}, nil
 }
