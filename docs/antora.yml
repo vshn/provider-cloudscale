@@ -1,10 +1,10 @@
 # TODO: Adjust project meta
 name: provider-cloudscale
 title: Cloudscale Provider for Crossplane
-version: master
+version: "0.4"
 start_page: ROOT:index.adoc
 nav:
   - modules/ROOT/nav.adoc
 asciidoc:
   attributes:
-    releaseVersion: latest
+    releaseVersion: v0.4.0
