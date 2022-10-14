@@ -12,6 +12,5 @@ spec:
     credentialsSecretRef:
       name: objectsuser-credentials-e2e-test-kuttl
       namespace: default
-    endpointURL: objects.rma.cloudscale.ch
     region: rma
 ---

@@ -25,6 +25,9 @@ func (p *ProvisioningPipeline) Observe(ctx context.Context, mg resource.Managed)
 	s3Client := p.minio
 	bucket := fromManaged(mg)
 
+	bucket.Status.Endpoint = getEndpoint(bucket)
+	bucket.Status.EndpointURL = getEndpointURL(bucket)
+
 	bucketName := bucket.GetBucketName()
 	exists, err := bucketExistsFn(ctx, s3Client, bucketName)
 	if err != nil {
