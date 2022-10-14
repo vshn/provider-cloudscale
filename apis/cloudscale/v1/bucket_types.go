@@ -36,6 +36,9 @@ type BucketParameters struct {
 
 	// +kubebuilder:validation:Required
 
+	// Endpoint is the host name where to create the bucket.
+	Endpoint string `json:"endpoint"`
+
 	// EndpointURL is the URL where to create the bucket.
 	// If the scheme is omitted (`http/s`), HTTPS is assumed.
 	// Changing the endpoint after initial creation might have no effect.

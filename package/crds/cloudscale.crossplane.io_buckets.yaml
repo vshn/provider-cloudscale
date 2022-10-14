@@ -105,6 +105,9 @@ spec:
                         type: string
                     type: object
                     x-kubernetes-map-type: atomic
+                  endpoint:
+                    description: Endpoint is the host name where to create the bucket.
+                    type: string
                   endpointURL:
                     description: EndpointURL is the URL where to create the bucket.
                       If the scheme is omitted (`http/s`), HTTPS is assumed. Changing
@@ -117,6 +120,7 @@ spec:
                     type: string
                 required:
                 - credentialsSecretRef
+                - endpoint
                 - endpointURL
                 - region
                 type: object

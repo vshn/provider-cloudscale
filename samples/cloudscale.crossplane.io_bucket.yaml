@@ -10,6 +10,7 @@ spec:
     credentialsSecretRef:
       name: my-cloudscale-user-credentials
       namespace: default
+    endpoint: ""
     endpointURL: objects.rma.cloudscale.ch
     region: rma
 status:
