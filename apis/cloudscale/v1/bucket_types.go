@@ -36,12 +36,7 @@ type BucketParameters struct {
 
 	// +kubebuilder:validation:Required
 
-	// Endpoint is the host name where to create the bucket.
-	Endpoint string `json:"endpoint"`
-
-	// EndpointURL is the URL where to create the bucket.
-	// If the scheme is omitted (`http/s`), HTTPS is assumed.
-	// Changing the endpoint after initial creation might have no effect.
+	// Deprecated: Only here for compatibility with legacy Bucket objects
 	EndpointURL string `json:"endpointURL"`
 
 	// BucketName is the name of the bucket to create.
@@ -83,6 +78,8 @@ type BucketObservation struct {
 // BucketStatus represents the observed state of a Bucket.
 type BucketStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
+	Endpoint            string            `json:"endpoint"`
+	EndpointURL         string            `json:"endpointURL"`
 	AtProvider          BucketObservation `json:"atProvider,omitempty"`
 }
 

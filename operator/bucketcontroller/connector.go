@@ -48,6 +48,8 @@ func (c *bucketConnector) Connect(ctx context.Context, mg resource.Managed) (man
 		return &NoopClient{}, nil
 	}
 
+	bucket.Status.Endpoint = fmt.Sprintf("objects.%s.cloudscale.ch", bucket.Spec.ForProvider.Region)
+	bucket.Status.EndpointURL = fmt.Sprintf("https://%s", bucket.Status.Endpoint)
 	pctx := &connectContext{Context: ctx, bucket: bucket}
 	pipe := pipeline.NewPipeline[*connectContext]()
 	pipe.WithBeforeHooks(pipelineutil.DebugLogger(pctx)).
@@ -103,7 +105,7 @@ func (c *bucketConnector) createS3Client(ctx *connectContext) error {
 	secret := ctx.credentialsSecret
 	bucket := ctx.bucket
 
-	parsed, err := url.Parse(bucket.Spec.ForProvider.EndpointURL)
+	parsed, err := url.Parse(bucket.Status.EndpointURL)
 	if err != nil {
 		return err
 	}
