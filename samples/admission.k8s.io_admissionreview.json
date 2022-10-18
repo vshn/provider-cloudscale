@@ -44,7 +44,6 @@
             "name": "my-cloudscale-user-credentials",
             "namespace": "default"
           },
-          "endpoint": "",
           "endpointURL": "objects.rma.cloudscale.ch",
           "bucketName": "another",
           "region": "rma",
@@ -52,6 +51,8 @@
         }
       },
       "status": {
+        "endpoint": "",
+        "endpointURL": "",
         "atProvider": {}
       }
     },
@@ -68,7 +69,6 @@
             "name": "my-cloudscale-user-credentials",
             "namespace": "default"
           },
-          "endpoint": "",
           "endpointURL": "objects.rma.cloudscale.ch",
           "bucketName": "my-provider-test-bucket",
           "region": "rma",
@@ -76,6 +76,8 @@
         }
       },
       "status": {
+        "endpoint": "",
+        "endpointURL": "",
         "atProvider": {
           "bucketName": "my-provider-test-bucket"
         }
