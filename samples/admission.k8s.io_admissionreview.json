@@ -51,8 +51,6 @@
         }
       },
       "status": {
-        "endpoint": "",
-        "endpointURL": "",
         "atProvider": {}
       }
     },
@@ -76,8 +74,6 @@
         }
       },
       "status": {
-        "endpoint": "",
-        "endpointURL": "",
         "atProvider": {
           "bucketName": "my-provider-test-bucket"
         }

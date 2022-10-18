@@ -14,5 +14,3 @@ spec:
     region: rma
 status:
   atProvider: {}
-  endpoint: ""
-  endpointURL: ""

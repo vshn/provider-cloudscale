@@ -337,9 +337,6 @@ spec:
                 type: string
               endpointURL:
                 type: string
-            required:
-            - endpoint
-            - endpointURL
             type: object
         required:
         - spec

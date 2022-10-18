@@ -78,8 +78,8 @@ type BucketObservation struct {
 // BucketStatus represents the observed state of a Bucket.
 type BucketStatus struct {
 	xpv1.ResourceStatus `json:",inline"`
-	Endpoint            string            `json:"endpoint"`
-	EndpointURL         string            `json:"endpointURL"`
+	Endpoint            string            `json:"endpoint,omitempty"`
+	EndpointURL         string            `json:"endpointURL,omitempty"`
 	AtProvider          BucketObservation `json:"atProvider,omitempty"`
 }
 
