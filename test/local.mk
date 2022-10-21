@@ -18,7 +18,8 @@ crossplane-setup: $(crossplane_sentinel) ## Installs Crossplane in kind cluster.
 
 $(crossplane_sentinel): export KUBECONFIG = $(KIND_KUBECONFIG)
 $(crossplane_sentinel): $(KIND_KUBECONFIG)
-	helm repo add crossplane https://charts.crossplane.io/stable
+	helm repo add --force-update crossplane https://charts.crossplane.io/stable
+	helm repo update
 	helm upgrade --install crossplane crossplane/crossplane \
 		--create-namespace \
 		--namespace crossplane-system \
@@ -124,7 +125,7 @@ $(mc_bin): | $(go_bin)
 
 test-e2e: export KUBECONFIG = $(KIND_KUBECONFIG)
 test-e2e: $(kuttl_bin) $(mc_bin) local-install provider-config ## E2E tests
-	GOBIN=$(go_bin) $(kuttl_bin) test ./test/e2e --config ./test/e2e/kuttl-test.yaml
+	GOBIN=$(go_bin) $(kuttl_bin) test ./test/e2e --config ./test/e2e/kuttl-test.yaml --suppress-log=Events
 # kuttl leaves kubeconfig garbage: https://github.com/kudobuilder/kuttl/issues/297
 	@rm -f kubeconfig
 
