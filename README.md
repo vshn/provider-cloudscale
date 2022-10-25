@@ -3,13 +3,10 @@
 [![Build](https://img.shields.io/github/workflow/status/vshn/provider-cloudscale/Test)][build]
 ![Go version](https://img.shields.io/github/go-mod/go-version/vshn/provider-cloudscale)
 [![Version](https://img.shields.io/github/v/release/vshn/provider-cloudscale)][releases]
-[![Maintainability](https://img.shields.io/codeclimate/maintainability/vshn/provider-cloudscale)][codeclimate]
-[![Coverage](https://img.shields.io/codeclimate/coverage/vshn/provider-cloudscale)][codeclimate]
 [![GitHub downloads](https://img.shields.io/github/downloads/vshn/provider-cloudscale/total)][releases]
 
 [build]: https://github.com/vshn/provider-cloudscale/actions?query=workflow%3ATest
 [releases]: https://github.com/vshn/provider-cloudscale/releases
-[codeclimate]: https://codeclimate.com/github/vshn/provider-cloudscale
 
 Crossplane provider for managing resources on cloudscale.ch.
 

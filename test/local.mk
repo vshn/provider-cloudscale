@@ -71,7 +71,7 @@ test-integration: $(setup_envtest_bin) .envtest_crds ## Run integration tests ag
 	$(setup_envtest_bin) $(ENVTEST_ADDITIONAL_FLAGS) use '$(ENVTEST_K8S_VERSION)!'
 	chmod -R +w $(kind_dir)/k8s
 	export KUBEBUILDER_ASSETS="$$($(setup_envtest_bin) $(ENVTEST_ADDITIONAL_FLAGS) use -i -p path '$(ENVTEST_K8S_VERSION)!')" && \
-	go test -tags=integration -coverprofile cover.out -covermode atomic ./...
+	go test -tags=integration ./...
 
 .envtest_crd_dir:
 	@mkdir -p $(envtest_crd_dir)
