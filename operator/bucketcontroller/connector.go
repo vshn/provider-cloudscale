@@ -33,7 +33,15 @@ type connectContext struct {
 	credentialsSecret *corev1.Secret
 }
 
-// Connect implements managed.ExternalConnecter.
+func getEndpoint(bucket *cloudscalev1.Bucket) string {
+	return fmt.Sprintf("objects.%s.cloudscale.ch", bucket.Spec.ForProvider.Region)
+}
+
+func getEndpointURL(bucket *cloudscalev1.Bucket) string {
+	return fmt.Sprintf("https://%s", getEndpoint(bucket))
+}
+
+// Connect implements managed.ExternalConnector.
 func (c *bucketConnector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
 	ctx = pipeline.MutableContext(ctx)
 	log := controllerruntime.LoggerFrom(ctx)
@@ -48,8 +56,6 @@ func (c *bucketConnector) Connect(ctx context.Context, mg resource.Managed) (man
 		return &NoopClient{}, nil
 	}
 
-	bucket.Status.Endpoint = fmt.Sprintf("objects.%s.cloudscale.ch", bucket.Spec.ForProvider.Region)
-	bucket.Status.EndpointURL = fmt.Sprintf("https://%s", bucket.Status.Endpoint)
 	pctx := &connectContext{Context: ctx, bucket: bucket}
 	pipe := pipeline.NewPipeline[*connectContext]()
 	pipe.WithBeforeHooks(pipelineutil.DebugLogger(pctx)).
@@ -105,7 +111,7 @@ func (c *bucketConnector) createS3Client(ctx *connectContext) error {
 	secret := ctx.credentialsSecret
 	bucket := ctx.bucket
 
-	parsed, err := url.Parse(bucket.Status.EndpointURL)
+	parsed, err := url.Parse(getEndpointURL(bucket))
 	if err != nil {
 		return err
 	}
