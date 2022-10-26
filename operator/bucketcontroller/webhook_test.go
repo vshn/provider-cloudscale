@@ -1,6 +1,7 @@
 package bucketcontroller
 
 import (
+	"context"
 	"testing"
 
 	"github.com/go-logr/logr"
@@ -50,7 +51,7 @@ func TestBucketValidator_ValidateUpdate_PreventBucketNameChange(t *testing.T) {
 				Spec:       cloudscalev1.BucketSpec{ForProvider: cloudscalev1.BucketParameters{BucketName: tc.newBucketName}},
 			}
 			v := &BucketValidator{log: logr.Discard()}
-			err := v.ValidateUpdate(nil, oldBucket, newBucket)
+			err := v.ValidateUpdate(context.TODO(), oldBucket, newBucket)
 			if tc.expectedError != "" {
 				assert.EqualError(t, err, tc.expectedError)
 			} else {
@@ -89,7 +90,7 @@ func TestBucketValidator_ValidateUpdate_PreventRegionChange(t *testing.T) {
 				Status:     cloudscalev1.BucketStatus{AtProvider: cloudscalev1.BucketObservation{BucketName: "bucket"}},
 			}
 			v := &BucketValidator{log: logr.Discard()}
-			err := v.ValidateUpdate(nil, oldBucket, newBucket)
+			err := v.ValidateUpdate(context.TODO(), oldBucket, newBucket)
 			if tc.expectedError != "" {
 				assert.EqualError(t, err, tc.expectedError)
 			} else {

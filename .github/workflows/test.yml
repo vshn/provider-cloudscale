@@ -15,13 +15,13 @@ on:
       - docs/**
 
 jobs:
-  test:
+  go-unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
       - name: Determine Go version from go.mod
-        run: echo "GO_VERSION=$(grep "go 1." go.mod | cut -d " " -f 2)" >> $GITHUB_ENV
+        run: echo "GO_VERSION=$(go mod edit -json | jq -r .Go)" >> $GITHUB_ENV
 
       - uses: actions/setup-go@v3
         with:
@@ -36,11 +36,3 @@ jobs:
 
       - name: Run tests
         run: make test-integration
-
-      - name: Upload code coverage report to Code Climate
-        uses: paambaati/codeclimate-action@v3.0.0
-        env:
-          CC_TEST_REPORTER_ID: 02db308ae08e47bc7d06ae531da4a6a9eeca76bd03f53b2752ecd02bfe226c57
-        with:
-          coverageLocations: cover.out:gocov
-          prefix: github.com/${{ github.repository }}

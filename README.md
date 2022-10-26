@@ -3,13 +3,10 @@
 [![Build](https://img.shields.io/github/workflow/status/vshn/provider-cloudscale/Test)][build]
 ![Go version](https://img.shields.io/github/go-mod/go-version/vshn/provider-cloudscale)
 [![Version](https://img.shields.io/github/v/release/vshn/provider-cloudscale)][releases]
-[![Maintainability](https://img.shields.io/codeclimate/maintainability/vshn/provider-cloudscale)][codeclimate]
-[![Coverage](https://img.shields.io/codeclimate/coverage/vshn/provider-cloudscale)][codeclimate]
 [![GitHub downloads](https://img.shields.io/github/downloads/vshn/provider-cloudscale/total)][releases]
 
 [build]: https://github.com/vshn/provider-cloudscale/actions?query=workflow%3ATest
 [releases]: https://github.com/vshn/provider-cloudscale/releases
-[codeclimate]: https://codeclimate.com/github/vshn/provider-cloudscale
 
 Crossplane provider for managing resources on cloudscale.ch.
 
@@ -69,6 +66,18 @@ To test and troubleshoot the webhooks on the cluster, simply apply your changes 
 ### Crossplane Provider Mechanics
 
 For detailed information on how Crossplane Provider works from a development perspective check [provider mechanics documentation page](https://kb.vshn.ch/app-catalog/explanations/crossplane_provider_mechanics.html).
+
+### e2e testing with kuttl
+
+Some scenarios are tested with the Kubernetes E2E testing tool [Kuttl](https://kuttl.dev/docs).
+Kuttl is basically comparing the installed manifests (usually files named `##-install*.yaml`) with observed objects and compares the desired output (files named `##-assert*.yaml`).
+
+To execute tests, run `make test-e2e` from the root dir.
+
+If a test fails, kuttl leaves the resources in the kind-cluster intact, so you can inspect the resources and events if necessary.
+Please note that Kubernetes Events from cluster-scoped resources appear in the `default` namespace only, but `kubectl describe ...` should show you the events.
+
+If tests succeed, the relevant resources are deleted to not use up costs on the cloud providers.
 
 ### Cleaning up e2e tests
 
