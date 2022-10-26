@@ -44,7 +44,6 @@
             "name": "my-cloudscale-user-credentials",
             "namespace": "default"
           },
-          "endpointURL": "objects.rma.cloudscale.ch",
           "bucketName": "another",
           "region": "rma",
           "bucketDeletionPolicy": "DeleteAll"
@@ -67,7 +66,6 @@
             "name": "my-cloudscale-user-credentials",
             "namespace": "default"
           },
-          "endpointURL": "objects.rma.cloudscale.ch",
           "bucketName": "my-provider-test-bucket",
           "region": "rma",
           "bucketDeletionPolicy": "DeleteAll"

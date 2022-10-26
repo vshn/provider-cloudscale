@@ -16,7 +16,6 @@ spec:
     credentialsSecretRef:
       name: objectsuser-credentials-e2e-test-kuttl
       namespace: default
-    endpointURL: objects.rma.cloudscale.ch
     region: rma
 status:
   atProvider:
@@ -28,4 +27,6 @@ status:
     - type: Synced
       status: 'True'
       reason: ReconcileSuccess
+  endpoint: objects.rma.cloudscale.ch
+  endpointURL: https://objects.rma.cloudscale.ch
 ---
