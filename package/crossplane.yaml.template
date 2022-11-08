@@ -3,11 +3,18 @@ kind: Provider
 metadata:
   name: provider-cloudscale
   annotations:
-    meta.crossplane.io/maintainer: VSHN <info@vshn.net>
+    meta.crossplane.io/maintainer: VSHN <info@vshn.ch>
     meta.crossplane.io/source: github.com/vshn/provider-cloudscale
     meta.crossplane.io/license: Apache-2
     meta.crossplane.io/description: |
-      Crossplane provider for managing resources on cloudscale.ch
+      VSHN's Crossplane provider to manage cloudscale.ch services in Kubernetes.
+    meta.crossplane.io/readme: |
+      `provider-cloudscale` is the Crossplane infrastructure provider for
+      [cloudscale.ch](https://www.cloudscale.ch/), provided by [VSHN](https://www.vshn.ch/).
+      Available resources and their fields can be found in the
+      [CRD Docs](https://marketplace.upbound.io/providers/vshn/provider-cloudscale/latest/crds).
+      If you encounter an issue please create an issue in the
+      [vshn/provider-cloudscale](https://github.com/vshn/provider-cloudscale/issues) repo.
 spec:
   controller:
     image: ghcr.io/vshn/provider-cloudscale/controller:latest
