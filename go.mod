@@ -6,7 +6,7 @@ require (
 	github.com/ccremer/go-command-pipeline v0.20.0
 	github.com/cloudscale-ch/cloudscale-go-sdk/v2 v2.0.1
 	github.com/crossplane/crossplane-runtime v0.18.0
-	github.com/crossplane/crossplane-tools v0.0.0-20220901191540-806c0b01097b
+	github.com/crossplane/crossplane-tools v0.0.0-20230925130601-628280f8bf79
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
 	github.com/minio/minio-go/v7 v7.0.45
@@ -80,10 +80,10 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/net v0.2.0 // indirect
-	golang.org/x/sys v0.2.0 // indirect
-	golang.org/x/term v0.2.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/term v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
