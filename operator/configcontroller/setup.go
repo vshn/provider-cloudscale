@@ -4,7 +4,6 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	providerv1 "github.com/vshn/provider-cloudscale/apis/provider/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/reconciler/providerconfig"
@@ -28,6 +27,15 @@ func SetupController(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&providerv1.ProviderConfig{}).
-		Watches(&source.Kind{Type: &providerv1.ProviderConfigUsage{}}, &resource.EnqueueRequestForProviderConfig{}).
+		Watches(&providerv1.ProviderConfigUsage{}, &resource.EnqueueRequestForProviderConfig{}).
 		Complete(r)
 }
+
+// cannot use &resource.EnqueueRequestForProviderConfig{}
+// 	(value of type
+// 		*"github.com/crossplane/crossplane-runtime/pkg/resource".EnqueueRequestForProviderConfig)
+// 	as  handler.EventHandler value in argument to
+// 	ctrl.NewControllerManagedBy(mgr).Named(name).For(&providerv1.ProviderConfig{})
+// 	.Watches: *"github.com/crossplane/crossplane-runtime/pkg/resource".EnqueueRequestForProviderConfig does not implement handler.EventHandler (wrong type for method Create)
+// 		have Create("sigs.k8s.io/controller-runtime/pkg/event".TypedCreateEvent[client.Object], workqueue.RateLimitingInterface)
+// 		want Create(context.Context, "sigs.k8s.io/controller-runtime/pkg/event".TypedCreateEvent[client.Object],

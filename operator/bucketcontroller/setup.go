@@ -53,7 +53,10 @@ func SetupWebhook(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(&cloudscalev1.Bucket{}).
 		WithValidator(&BucketValidator{
-			log: mgr.GetLogger().WithName("webhook").WithName(strings.ToLower(cloudscalev1.BucketKind)),
+			log: mgr.GetLogger().
+				WithName("webhook").
+				WithName(strings.
+					ToLower(cloudscalev1.BucketKind)),
 		}).
 		Complete()
 }

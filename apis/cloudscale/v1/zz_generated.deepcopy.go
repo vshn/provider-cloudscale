@@ -5,6 +5,7 @@
 package v1
 
 import (
+	commonv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -102,6 +103,11 @@ func (in *BucketParameters) DeepCopy() *BucketParameters {
 func (in *BucketSpec) DeepCopyInto(out *BucketSpec) {
 	*out = *in
 	in.ResourceSpec.DeepCopyInto(&out.ResourceSpec)
+	if in.ProviderReference != nil {
+		in, out := &in.ProviderReference, &out.ProviderReference
+		*out = new(commonv1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
 	out.ForProvider = in.ForProvider
 }
 
@@ -239,6 +245,11 @@ func (in *ObjectsUserParameters) DeepCopy() *ObjectsUserParameters {
 func (in *ObjectsUserSpec) DeepCopyInto(out *ObjectsUserSpec) {
 	*out = *in
 	in.ResourceSpec.DeepCopyInto(&out.ResourceSpec)
+	if in.ProviderReference != nil {
+		in, out := &in.ProviderReference, &out.ProviderReference
+		*out = new(commonv1.Reference)
+		(*in).DeepCopyInto(*out)
+	}
 	in.ForProvider.DeepCopyInto(&out.ForProvider)
 }
 

@@ -24,6 +24,7 @@ type ObjectsUserParameters struct {
 // ObjectsUserSpec defines the desired state of an ObjectsUser.
 type ObjectsUserSpec struct {
 	xpv1.ResourceSpec `json:",inline"`
+	ProviderReference *xpv1.Reference       `json:"providerReference,omitempty"`
 	ForProvider       ObjectsUserParameters `json:"forProvider"`
 }
 
