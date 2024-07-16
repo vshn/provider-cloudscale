@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"time"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
@@ -11,6 +12,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	"github.com/urfave/cli/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -59,7 +61,19 @@ func (c *operatorCommand) execute(ctx *cli.Context) error {
 		c.kubeconfig.QPS = 100
 		c.kubeconfig.Burst = 150 // more Openshift friendly
 
-		mgr, err := ctrl.NewManager(c.kubeconfig, ctrl.Options{
+		webhookOpts := webhook.Options{
+			TLSOpts: []func(*tls.Config){
+				func(tlsConfig *tls.Config) {
+					tlsConfig.MinVersion = tls.VersionTLS13
+				},
+			},
+		}
+
+		if c.WebhookCertDir != "" {
+			webhookOpts.CertDir = c.WebhookCertDir
+		}
+
+		opts := ctrl.Options{
 			// controller-runtime uses both ConfigMaps and Leases for leader election by default.
 			// Leases expire after 15 seconds, with a 10-second renewal deadline.
 			// We've observed leader loss due to renewal deadlines being exceeded when under high load - i.e.
@@ -70,8 +84,12 @@ func (c *operatorCommand) execute(ctx *cli.Context) error {
 			LeaderElectionResourceLock: resourcelock.LeasesResourceLock,
 			LeaseDuration:              func() *time.Duration { d := 60 * time.Second; return &d }(),
 			RenewDeadline:              func() *time.Duration { d := 50 * time.Second; return &d }(),
-		})
+			WebhookServer:              webhook.NewServer(webhookOpts),
+		}
+
+		mgr, err := ctrl.NewManager(c.kubeconfig, opts)
 		c.manager = mgr
+
 		return err
 	})
 	p.AddStep(p.WithNestedSteps("register schemes", nil,
@@ -82,13 +100,10 @@ func (c *operatorCommand) execute(ctx *cli.Context) error {
 	p.AddStepFromFunc("setup controllers", func(ctx context.Context) error {
 		return operator.SetupControllers(c.manager)
 	})
-	p.AddStep(p.When(pipeline.Bool[context.Context](c.WebhookCertDir != ""), "setup webhook server",
+	p.AddStepFromFunc("register webhooks",
 		func(ctx context.Context) error {
-			ws := c.manager.GetWebhookServer()
-			ws.CertDir = c.WebhookCertDir
-			ws.TLSMinVersion = "1.3"
 			return operator.SetupWebhooks(c.manager)
-		}))
+		})
 	p.AddStepFromFunc("run manager", func(ctx context.Context) error {
 		log.Info("Starting manager")
 		return c.manager.Start(ctx)
