@@ -11,12 +11,6 @@ $(crossplane_bin): | $(go_bin)
 	go install github.com/crossplane/crossplane/cmd/crank@latest
 	@mv $(go_bin)/crank $@
 
-# Install up plugin
-$(up_bin):export GOBIN = $(go_bin)
-$(up_bin): | $(go_bin)
-	curl -sL "https://cli.upbound.io" | sh
-	@mv up $@
-
 .PHONY: package
 package: ## All-in-one packaging and releasing
 package: package-push
@@ -44,12 +38,12 @@ package-provider: $(up_bin) generate-go build-docker ## Build Crossplane package
 .PHONY: .ghcr-package-push
 .ghcr-package-push: pkg_file = $(package_dir)/provider-cloudscale.xpkg
 .ghcr-package-push: $(crossplane_bin) package-provider
-	$(crossplane_bin) push provider -f $(pkg_file) $(GHCR_PACKAGE_IMG)
+	$(crossplane_bin) xpkg push -f $(pkg_file) $(GHCR_PACKAGE_IMG)
 
 .PHONY: .upbound-package-push
 .upbound-package-push: pkg_file = $(package_dir)/provider-cloudscale.xpkg
 .upbound-package-push: package-provider
-	$(up_bin) xpkg push -f $(pkg_file) $(UPBOUND_PACKAGE_IMG)
+	$(crossplane_bin) xpkg push -f $(pkg_file) $(UPBOUND_PACKAGE_IMG)
 
 .PHONY: package-push
 package-push: pkg_file = $(package_dir)/provider-cloudscale.xpkg

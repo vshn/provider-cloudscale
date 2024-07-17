@@ -33,11 +33,12 @@ build: build-bin build-docker ## All-in-one build
 .PHONY: build-bin
 build-bin: export CGO_ENABLED = 0
 build-bin: fmt vet ## Build binary
-	@go build -o $(BIN_FILENAME) .
+	env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+	go build -o $(BIN_FILENAME) .
 
 .PHONY: build-docker
 build-docker: build-bin ## Build docker image
-	$(DOCKER_CMD) build -t $(CONTAINER_IMG) .
+	$(DOCKER_CMD) build --platform linux/amd64 -t $(CONTAINER_IMG) .
 
 .PHONY: test
 test: test-go ## All-in-one test
