@@ -45,9 +45,35 @@ func hasSecretRef(ctx *pipelineContext) bool {
 }
 
 func toConnectionDetails(csUser *cloudscalesdk.ObjectsUser) managed.ConnectionDetails {
+	if csUser == nil {
+		return map[string][]byte{}
+	}
+
+	if csUser.Keys == nil {
+		return map[string][]byte{}
+	}
+
+	if len(csUser.Keys) == 0 {
+		return map[string][]byte{}
+	}
+
+	if csUser.Keys[0] == nil {
+		return map[string][]byte{}
+	}
+
+	accessKey, exists := csUser.Keys[0]["access_key"]
+	if !exists {
+		accessKey = ""
+	}
+
+	accessSecret, exists := csUser.Keys[0]["secret_key"]
+	if !exists {
+		accessSecret = ""
+	}
+
 	return map[string][]byte{
-		cloudscalev1.AccessKeyIDName:     []byte(csUser.Keys[0]["access_key"]),
-		cloudscalev1.SecretAccessKeyName: []byte(csUser.Keys[0]["secret_key"]),
+		cloudscalev1.AccessKeyIDName:     []byte(accessKey),
+		cloudscalev1.SecretAccessKeyName: []byte(accessSecret),
 	}
 }
 
