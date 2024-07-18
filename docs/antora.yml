@@ -7,4 +7,4 @@ nav:
   - modules/ROOT/nav.adoc
 asciidoc:
   attributes:
-    releaseVersion: v0.5.3
+    releaseVersion: v0.5.1
