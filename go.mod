@@ -14,7 +14,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.45
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.20.3
-	go.uber.org/zap v1.26.0
+	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.15.0
 	k8s.io/api v0.30.1
 	k8s.io/apimachinery v0.30.1
