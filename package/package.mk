@@ -24,7 +24,7 @@ package-provider-local: $(crossplane_bin) generate-go ## Build Crossplane packag
 
 .PHONY: package-provider
 package-provider: export CONTROLLER_IMG = $(CONTAINER_IMG)
-package-provider: generate-go build-docker ## Build Crossplane package for Upbound Marketplace
+package-provider: $(crossplane_bin) generate-go build-docker ## Build Crossplane package for Upbound Marketplace
 	@rm -rf package/*.xpkg
 	@yq e 'del(.spec)' $(package_dir)/crossplane.yaml.template > $(package_dir)/crossplane.yaml
 	$(crossplane_bin) xpkg build -f $(package_dir) -o $(package_dir)/provider-cloudscale.xpkg --controller=$(CONTROLLER_IMG)
@@ -41,7 +41,7 @@ package-provider: generate-go build-docker ## Build Crossplane package for Upbou
 
 .PHONY: .upbound-package-push
 .upbound-package-push: pkg_file = $(package_dir)/provider-cloudscale.xpkg
-.upbound-package-push: package-provider
+.upbound-package-push: $(crossplane_bin) package-provider
 	$(crossplane_bin) xpkg push -f $(pkg_file) $(UPBOUND_PACKAGE_IMG)
 
 .PHONY: package-push
