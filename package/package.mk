@@ -27,7 +27,7 @@ package-provider: export CONTROLLER_IMG = $(CONTAINER_IMG)
 package-provider: $(crossplane_bin) generate-go build-docker ## Build Crossplane package for Upbound Marketplace
 	@rm -rf package/*.xpkg
 	@yq e 'del(.spec)' $(package_dir)/crossplane.yaml.template > $(package_dir)/crossplane.yaml
-	$(crossplane_bin) xpkg build -f $(package_dir) -o $(package_dir)/provider-cloudscale.xpkg --controller=$(CONTROLLER_IMG)
+	$(crossplane_bin) xpkg build -f $(package_dir) -o $(package_dir)/provider-cloudscale.xpkg --embed-runtime-image=$(CONTROLLER_IMG)
 
 .PHONY: .local-package-push
 .local-package-push: pkg_file = $(shell ls $(package_dir)/*.xpkg)
