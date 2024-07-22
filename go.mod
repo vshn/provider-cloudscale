@@ -6,7 +6,7 @@ toolchain go1.22.5
 
 require (
 	github.com/ccremer/go-command-pipeline v0.20.0
-	github.com/cloudscale-ch/cloudscale-go-sdk/v2 v2.0.1
+	github.com/cloudscale-ch/cloudscale-go-sdk/v2 v2.1.0
 	github.com/crossplane/crossplane-runtime v1.16.0
 	github.com/crossplane/crossplane-tools v0.0.0-20240522174801-1ad3d4c87f21
 	github.com/go-logr/logr v1.4.1
