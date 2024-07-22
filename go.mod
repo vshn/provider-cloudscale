@@ -12,7 +12,7 @@ require (
 	github.com/go-logr/logr v1.4.1
 	github.com/go-logr/zapr v1.3.0
 	github.com/minio/minio-go/v7 v7.0.45
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli/v2 v2.20.3
 	go.uber.org/zap v1.26.0
 	golang.org/x/oauth2 v0.15.0
