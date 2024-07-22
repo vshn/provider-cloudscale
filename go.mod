@@ -9,7 +9,7 @@ require (
 	github.com/cloudscale-ch/cloudscale-go-sdk/v2 v2.0.1
 	github.com/crossplane/crossplane-runtime v1.16.0
 	github.com/crossplane/crossplane-tools v0.0.0-20240522174801-1ad3d4c87f21
-	github.com/go-logr/logr v1.4.1
+	github.com/go-logr/logr v1.4.2
 	github.com/go-logr/zapr v1.3.0
 	github.com/minio/minio-go/v7 v7.0.45
 	github.com/stretchr/testify v1.8.4
