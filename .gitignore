@@ -21,5 +21,4 @@ node_modules/
 .cr-index/
 
 # Crossplane package
-/package/crossplane.yaml
 /package/*.xpkg

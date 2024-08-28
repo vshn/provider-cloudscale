@@ -4,8 +4,8 @@ registry_sentinel = $(kind_dir)/registry_sentinel
 .PHONY: local-install
 local-install: export KUBECONFIG = $(KIND_KUBECONFIG)
 # for ControllerConfig:
-local-install: export INTERNAL_PACKAGE_IMG = registry.registry-system.svc.cluster.local:5000/$(PROJECT_OWNER)/$(PROJECT_NAME)/package:$(IMG_TAG)
-local-install: kind-load-image crossplane-setup registry-setup .local-package-push  ## Install Operator in local cluster
+local-install: export INTERNAL_PACKAGE_IMG = registry.registry-system.svc.cluster.local:5000/$(ORG)/$(APP_NAME):$(IMG_TAG)
+local-install: kind-load-image crossplane-setup registry-setup mirror-setup package-push-local ## Install Operator in local cluster
 	yq e '.spec.metadata.annotations."local.dev/installed"="$(shell date)"' test/controllerconfig-cloudscale.yaml | kubectl apply -f -
 	yq e '.spec.package=strenv(INTERNAL_PACKAGE_IMG)' test/provider-cloudscale.yaml | kubectl apply -f -
 	kubectl wait --for condition=Healthy provider.pkg.crossplane.io/provider-cloudscale --timeout 60s
@@ -130,6 +130,6 @@ test-e2e: $(kuttl_bin) $(mc_bin) local-install provider-config ## E2E tests
 .PHONY: .e2e-test-clean
 .e2e-test-clean: export KUBECONFIG = $(KIND_KUBECONFIG)
 .e2e-test-clean:
-	if [ -f $(KIND_KUBECONFIG) ]; then kubectl delete buckets --all; else echo "no kubeconfig found"; fi
-	if [ -f $(KIND_KUBECONFIG) ]; then kubectl delete objectsuser --all; else echo "no kubeconfig found"; fi
+	if [ -f $(KIND_KUBECONFIG) ]; then kubectl delete buckets --all; else echo "no kubeconfig found"; fi || true
+	if [ -f $(KIND_KUBECONFIG) ]; then kubectl delete objectsuser --all; else echo "no kubeconfig found"; fi || true
 	rm -f $(kuttl_bin) $(mc_bin)
