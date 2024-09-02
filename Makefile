@@ -20,6 +20,8 @@ include Makefile.vars.mk
 -include test/local.mk
 # Crossplane packaging
 -include package/package.mk
+# CI automation
+-include ci.mk
 
 golangci_bin = $(go_bin)/golangci-lint
 
@@ -28,17 +30,13 @@ help: ## Show this help
 	@grep -E -h '\s##\s' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: build
-build: build-bin build-docker ## All-in-one build
+build: build-bin docker-build ## All-in-one build
 
 .PHONY: build-bin
 build-bin: export CGO_ENABLED = 0
 build-bin: fmt vet ## Build binary
 	env CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 	go build -o $(BIN_FILENAME) .
-
-.PHONY: build-docker
-build-docker: build-bin ## Build docker image
-	$(DOCKER_CMD) build --platform linux/amd64 -t $(CONTAINER_IMG) .
 
 .PHONY: test
 test: test-go ## All-in-one test
@@ -98,9 +96,9 @@ run-operator: ## Run in Operator mode against your current kube context
 	go run . -v 1 operator
 
 .PHONY: clean
-clean: .package-clean .envtest-clean .e2e-test-clean kind-clean ## Cleans local build artifacts
+clean: .envtest-clean .e2e-test-clean kind-clean ## Cleans local build artifacts
 	rm -rf docs/node_modules $(docs_out_dir) dist .cache .work
-	$(DOCKER_CMD) rmi $(CONTAINER_IMG) || true
+	$(DOCKER_CMD) rmi $(IMG) || true
 
 $(golangci_bin): | $(go_bin)
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(go_bin)"
