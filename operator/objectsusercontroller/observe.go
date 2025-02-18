@@ -81,8 +81,7 @@ func (p *ObjectsUserPipeline) fetchCredentialsSecret(ctx *pipelineContext) error
 	secretRef := ctx.user.Spec.WriteConnectionSecretToReference
 	ctx.credentialsSecret = &corev1.Secret{}
 
-	err := kube.Get(ctx, types.NamespacedName{Namespace: secretRef.Namespace, Name: secretRef.Name}, ctx.credentialsSecret)
-	return err
+	return kube.Get(ctx, types.NamespacedName{Namespace: secretRef.Namespace, Name: secretRef.Name}, ctx.credentialsSecret)
 }
 
 func (p *ObjectsUserPipeline) checkCredentials(ctx *pipelineContext) error {
@@ -103,7 +102,9 @@ func (p *ObjectsUserPipeline) checkCredentials(ctx *pipelineContext) error {
 
 func (p *ObjectsUserPipeline) observeCredentialsHandler(ctx *pipelineContext, err error) error {
 	log := controllerruntime.LoggerFrom(ctx)
-	log.V(1).Error(err, "Credentials Secret needs reconciling")
+	if err != nil {
+		log.V(1).Error(err, "Credentials Secret needs reconciling")
+	}
 	return nil
 }
 
