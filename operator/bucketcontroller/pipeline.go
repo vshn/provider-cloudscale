@@ -2,7 +2,6 @@ package bucketcontroller
 
 import (
 	"context"
-
 	"github.com/crossplane/crossplane-runtime/pkg/event"
 	"github.com/crossplane/crossplane-runtime/pkg/resource"
 	"github.com/minio/minio-go/v7"
@@ -16,6 +15,10 @@ type ProvisioningPipeline struct {
 	kube     client.Client
 
 	minio *minio.Client
+}
+
+func (p *ProvisioningPipeline) Disconnect(ctx context.Context) error {
+	return nil
 }
 
 type pipelineContext struct {

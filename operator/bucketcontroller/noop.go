@@ -10,6 +10,10 @@ import (
 // NoopClient is a client that does nothing.
 type NoopClient struct{}
 
+func (n *NoopClient) Disconnect(ctx context.Context) error {
+	return nil
+}
+
 // Observe implements managed.ExternalClient.
 // It always returns an observation where the resource doesn't exist and is outdated, together with a nil error.
 func (n *NoopClient) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
@@ -30,6 +34,6 @@ func (n *NoopClient) Update(ctx context.Context, mg resource.Managed) (managed.E
 
 // Delete implement managed.ExternalClient.
 // It returns nil.
-func (n *NoopClient) Delete(ctx context.Context, mg resource.Managed) error {
-	return nil
+func (n *NoopClient) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
+	return managed.ExternalDelete{}, nil
 }

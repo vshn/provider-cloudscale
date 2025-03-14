@@ -24,6 +24,10 @@ type ObjectsUserPipeline struct {
 	csClient *cloudscalesdk.Client
 }
 
+func (p *ObjectsUserPipeline) Disconnect(ctx context.Context) error {
+	return nil
+}
+
 type pipelineContext struct {
 	context.Context
 	user              *cloudscalev1.ObjectsUser
