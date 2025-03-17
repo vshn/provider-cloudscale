@@ -2,6 +2,7 @@ package objectsusercontroller
 
 import (
 	"context"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
@@ -12,7 +13,7 @@ import (
 )
 
 // Delete implements managed.ExternalClient.
-func (p *ObjectsUserPipeline) Delete(ctx context.Context, mg resource.Managed) error {
+func (p *ObjectsUserPipeline) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	log := controllerruntime.LoggerFrom(ctx)
 	log.Info("Deleting resource")
 
@@ -25,7 +26,7 @@ func (p *ObjectsUserPipeline) Delete(ctx context.Context, mg resource.Managed) e
 			pipe.NewStep("emit event", p.emitDeletionEvent),
 		)
 	err := pipe.RunWithContext(pctx)
-	return errors.Wrap(err, "cannot deprovision objects user")
+	return managed.ExternalDelete{}, errors.Wrap(err, "cannot deprovision objects user")
 }
 
 // deleteObjectsUser deletes the objects user from the project associated with the API token.

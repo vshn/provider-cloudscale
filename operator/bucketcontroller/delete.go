@@ -3,6 +3,7 @@ package bucketcontroller
 import (
 	"context"
 	"fmt"
+	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
 
 	pipeline "github.com/ccremer/go-command-pipeline"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
@@ -15,7 +16,7 @@ import (
 )
 
 // Delete implements managed.ExternalClient.
-func (p *ProvisioningPipeline) Delete(ctx context.Context, mg resource.Managed) error {
+func (p *ProvisioningPipeline) Delete(ctx context.Context, mg resource.Managed) (managed.ExternalDelete, error) {
 	log := controllerruntime.LoggerFrom(ctx)
 	log.Info("Deleting resource")
 
@@ -31,7 +32,7 @@ func (p *ProvisioningPipeline) Delete(ctx context.Context, mg resource.Managed) 
 			pipe.NewStep("emit event", p.emitDeletionEvent),
 		)
 	err := pipe.RunWithContext(pctx)
-	return errors.Wrap(err, "cannot deprovision bucket")
+	return managed.ExternalDelete{}, errors.Wrap(err, "cannot deprovision bucket")
 }
 
 func hasDeleteAllPolicy(ctx *pipelineContext) bool {
