@@ -34,8 +34,6 @@ type BucketParameters struct {
 	// The secret must contain the keys `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
 	CredentialsSecretRef corev1.SecretReference `json:"credentialsSecretRef"`
 
-	// +kubebuilder:validation:Required
-
 	// Deprecated: Only here for compatibility with legacy Bucket objects
 	EndpointURL string `json:"endpointURL,omitempty"`
 
