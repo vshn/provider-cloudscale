@@ -7,7 +7,7 @@ import (
 
 func toTagMap(tags cloudscalev1.Tags) *cloudscalesdk.TagMap {
 	if len(tags) == 0 {
-		return nil
+		return &cloudscalesdk.TagMap{}
 	}
 	tagMap := make(cloudscalesdk.TagMap)
 	for k, v := range tags {
