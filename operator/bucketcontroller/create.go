@@ -40,7 +40,7 @@ func (p *ProvisioningPipeline) createS3Bucket(ctx *pipelineContext) error {
 	bucket := ctx.bucket
 
 	bucketName := bucket.GetBucketName()
-	err := s3Client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{Region: bucket.Spec.ForProvider.Region})
+	err := s3Client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{})
 
 	if err != nil {
 		// Check to see if we already own this bucket (which happens if we run this twice)
