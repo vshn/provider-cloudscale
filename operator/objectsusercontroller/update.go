@@ -37,15 +37,24 @@ func (p *ObjectsUserPipeline) updateObjectsUser(ctx *pipelineContext) error {
 	csClient := p.csClient
 	log := controllerruntime.LoggerFrom(ctx)
 	user := ctx.user
+	id := user.Status.AtProvider.UserID
+	tags := user.Spec.ForProvider.Tags
 
-	err := csClient.ObjectsUsers.Update(ctx, user.Status.AtProvider.UserID, &cloudscalesdk.ObjectsUserRequest{
-		DisplayName:           user.GetDisplayName(),
-		TaggedResourceRequest: cloudscalesdk.TaggedResourceRequest{Tags: toTagMap(user.Spec.ForProvider.Tags)},
-	})
-	if err != nil {
-		return err
+	if err := csClient.ObjectsUsers.Update(ctx, id, &cloudscalesdk.ObjectsUserRequest{
+		DisplayName: user.GetDisplayName(),
+	}); err != nil {
+		return errors.Wrap(err, "updating display_name")
 	}
+
+	if err := csClient.ObjectsUsers.Update(ctx, id, &cloudscalesdk.ObjectsUserRequest{
+		TaggedResourceRequest: cloudscalesdk.TaggedResourceRequest{
+			Tags: toTagMap(tags),
+		},
+	}); err != nil {
+		return errors.Wrap(err, "updating tags")
+	}
+
 	log.V(1).Info("Updated objects user in cloudscale",
-		"userID", user.Status.AtProvider.UserID, "displayName", user.GetDisplayName(), "tags", user.Spec.ForProvider.Tags)
+		"userID", id, "displayName", user.GetDisplayName(), "tags", tags)
 	return nil
 }
