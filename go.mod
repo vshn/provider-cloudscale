@@ -14,9 +14,9 @@ require (
 	github.com/urfave/cli/v2 v2.20.3
 	go.uber.org/zap v1.27.0
 	golang.org/x/oauth2 v0.27.0
-	k8s.io/api v0.31.0
-	k8s.io/apimachinery v0.31.0
-	k8s.io/client-go v0.31.0
+	k8s.io/api v0.34.0
+	k8s.io/apimachinery v0.34.0
+	k8s.io/client-go v0.34.0
 	sigs.k8s.io/controller-runtime v0.19.0
 	sigs.k8s.io/controller-tools v0.16.0
 )
