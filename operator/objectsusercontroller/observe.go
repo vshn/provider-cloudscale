@@ -47,6 +47,12 @@ func (p *ObjectsUserPipeline) Observe(ctx context.Context, mg resource.Managed) 
 		return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: false, ConnectionDetails: toConnectionDetails(csUser)}, nil
 	}
 
+	// Skip credentials reconciliation during deletion — credentials are irrelevant
+	// for the delete path and their secret may already be gone.
+	if !user.GetDeletionTimestamp().IsZero() {
+		return managed.ExternalObservation{ResourceExists: true, ResourceUpToDate: true, ConnectionDetails: toConnectionDetails(csUser)}, nil
+	}
+
 	pipe := pipeline.NewPipeline[*pipelineContext]()
 	result := pipe.WithBeforeHooks(pipelineutil.DebugLogger(pctx)).WithSteps(
 		pipe.WithNestedSteps("observe credentials secret", hasSecretRef,
@@ -103,7 +109,7 @@ func (p *ObjectsUserPipeline) checkCredentials(ctx *pipelineContext) error {
 
 func (p *ObjectsUserPipeline) observeCredentialsHandler(ctx *pipelineContext, err error) error {
 	log := controllerruntime.LoggerFrom(ctx)
-	log.V(1).Error(err, "Credentials Secret needs reconciling")
+	log.V(1).Info("Credentials Secret needs reconciling", "error", err)
 	return nil
 }
 
