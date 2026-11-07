@@ -21,6 +21,7 @@ LOCAL_PACKAGE_IMG = localhost:5000/$(ORG)/$(APP_NAME)/package:$(IMG_TAG)
 ## KIND:setup
 
 # https://hub.docker.com/r/kindest/node/tags
+# renovate: datasource=docker depName=docker.io/kindest/node
 KIND_NODE_VERSION ?= v1.28.9
 KIND_IMAGE ?= docker.io/kindest/node:$(KIND_NODE_VERSION)
 KIND_KUBECONFIG ?= $(kind_dir)/kind-kubeconfig-$(KIND_NODE_VERSION)
